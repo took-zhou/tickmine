@@ -24,17 +24,17 @@ def get_tradepoint(exch, ins, day_data, time_slice=[]):
     c.close()
     return temp
 
-def get_data(exch, ins):
+def get_date(exch, ins):
     c = zerorpc.Client()
     c.connect(api_address)
     temp = c.date(exch, ins)
     c.close()
     return temp
 
-def get_ins(exch):
+def get_ins(exch, special_type = ''):
     c = zerorpc.Client()
     c.connect(api_address)
-    temp = c.ins(exch)
+    temp = c.ins(exch, special_type)
     c.close()
     return temp
 

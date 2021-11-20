@@ -17,10 +17,10 @@ class remote(object):
         return kline.get(exch, ins, day_data, time_slice, period, subject)
 
     def date(self, exch, ins):
-        return info.get_data(exch, ins)
+        return info.get_date(exch, ins)
 
-    def ins(self, exch):
-        return info.get_instrument(exch)
+    def ins(self, exch, special_type = ''):
+        return info.get_instrument(exch, special_type)
 
     def exch(self):
         return info.get_exchange()

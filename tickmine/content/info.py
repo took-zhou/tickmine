@@ -1,12 +1,13 @@
 import os
 import datetime
+import re
 from tickmine.global_config import citic_dst_path
 
 class Info:
     def __init__(self):
         pass
 
-    def get_data(self, exch, ins):
+    def get_date(self, exch, ins):
         """ 合约过去的交易日获取
 
         Args:
@@ -18,7 +19,7 @@ class Info:
 
         Examples:
             >>> from tickmine.content.info import info
-            >>> info.get_data('DCE', 'c2105')
+            >>> info.get_date('DCE', 'c2105')
             ['20200716', '20210205', ... '20200902', '20210428', '20210506', '20210426']
         """
         ret = []
@@ -34,11 +35,12 @@ class Info:
             sorted_data = sorted(ret)
         return sorted_data
 
-    def get_instrument(self, exch):
+    def get_instrument(self, exch, special_type=''):
         """ 交易所过去的合约提取
 
         Args:
             exch: 交易所简称
+            special_type: 指定品种
 
         Returns:
             返回的数据类型是 list， 包含该交易所下面所有的合约
@@ -49,7 +51,17 @@ class Info:
            ['c2109', 'pg2109', ... 'jm2105', 'pp2007', 'pp2111', 'eb2204']
         """
         self.absolute_path = '%s/%s/%s'%(citic_dst_path, exch, exch)
-        return os.listdir(self.absolute_path)
+        instrument_list = os.listdir(self.absolute_path)
+        if exch == 'CZCE':
+            ret_list1 = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item)) and '5' <= item[-3] <= '9']
+            ret_list2 = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item)) and '0' <= item[-3] < '5']
+            ret_list1.sort()
+            ret_list2.sort()
+            ret_list = ret_list1 + ret_list2
+        else:
+            ret_list = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item))]
+            ret_list.sort()
+        return ret_list
 
     def get_exchange(self):
         """ 交易所过去的合约提取
