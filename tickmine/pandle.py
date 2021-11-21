@@ -7,17 +7,50 @@ import plotly.graph_objs as go
 from tickmine.global_config import citic_nature_path
 from tickmine.global_config import citic_dst_path
 from tickmine.global_config import citic_src_path
+from tickmine.global_config import tsaodai_src_path
 from tickmine.api import get_rawtick
 from tickmine.api import get_kline
 from tickmine.api import get_tradepoint
 
 def reconstruct_tick_page():
-    pass
-
-def show_tick_page():
     tick_source = ['CITIC', 'TSAODAI']
     source_option = st.sidebar.selectbox('SOURCE', tick_source)
+    if source_option == 'CITIC':
+        exchs = ['INE', 'CFFEX', 'SHFE', 'CZCE', 'DCE']
+        exch_option = st.sidebar.selectbox('EXCH', exchs)
 
+        day_night_option = st.sidebar.selectbox('DAY_NIGHT', [exch_option, '%s_night'%exch_option])
+
+        years = os.listdir('%s/%s/%s/'%(citic_src_path, exch_option, day_night_option))
+        years.sort()
+        year_option = st.sidebar.selectbox('YEAR', years)
+
+        months = os.listdir('%s/%s/%s/%s/'%(citic_src_path, exch_option, day_night_option, year_option))
+        months.sort()
+        st.write('`MONTH`')
+        for item in months:
+            st.write(item)
+        month_option = st.sidebar.selectbox('MONTH', months)
+
+        month_path = '%s/%s/%s/%s/%s/'%(citic_src_path, exch_option, day_night_option, year_option, month_option)
+        if os.path.isdir(month_path):
+            dates = os.listdir(month_path)
+            dates.sort()
+            st.write('`DATE`')
+            for item in dates:
+                st.write(item)
+
+    elif source_option == 'TSAODAI':
+        day_night_option = st.sidebar.selectbox('DAY_NIGHT', ['day', 'night'])
+
+        dates = os.listdir('%s/%s'%(tsaodai_src_path, day_night_option))
+        dates.sort()
+        st.write('`DATES`')
+        for item in dates:
+            if item.split('.')[-1] == 'gz':
+                st.write(item)
+
+def show_tick_page():
     exchs = ['INE', 'CFFEX', 'SHFE', 'CZCE', 'DCE']
     exch_option = st.sidebar.selectbox('EXCH', exchs)
 
@@ -108,7 +141,7 @@ def show_tick_page():
 
 st.set_page_config(page_title='onepiece operation control', layout='wide', page_icon="..")
 
-genre = st.sidebar.radio('operation', ('show', 'reconstruct'))
+genre = st.sidebar.selectbox('operation', ['show', 'reconstruct'])
 if genre == 'show':
     show_tick_page()
 elif genre == 'reconstruct':

@@ -53,13 +53,13 @@ class Info:
         self.absolute_path = '%s/%s/%s'%(citic_dst_path, exch, exch)
         instrument_list = os.listdir(self.absolute_path)
         if exch == 'CZCE':
-            ret_list1 = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item)) and '5' <= item[-3] <= '9']
-            ret_list2 = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item)) and '0' <= item[-3] < '5']
+            ret_list1 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '5' <= item[-3] <= '9']
+            ret_list2 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '0' <= item[-3] < '5']
             ret_list1.sort()
             ret_list2.sort()
             ret_list = ret_list1 + ret_list2
         else:
-            ret_list = [item for item in instrument_list if special_type == ''.join(re.findall(r'[A-Za-z]', item))]
+            ret_list = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item)))]
             ret_list.sort()
         return ret_list
 
