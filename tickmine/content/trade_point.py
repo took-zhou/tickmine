@@ -6,8 +6,13 @@ import math
 import numpy as np
 import pickle
 
-from tickmine.global_config import citic_nature_path
-from tickmine.global_config import citic_dst_path
+if os.environ.get('database') == 'citic':
+    from tickmine.global_config import citic_dst_path as database_path
+    from tickmine.global_config import citic_nature_path as nature_path
+elif os.environ.get('database') == 'tsaodai':
+    from tickmine.global_config import tsaodai_dst_path as database_path
+    from tickmine.global_config import tsaodai_nature_path as nature_path
+
 from tickmine.content.raw_tick import rawtick
 
 pd.set_option('display.max_rows', None)
@@ -114,7 +119,7 @@ class tradePoint():
             2021-03-29 14:59:42.000    66590.0
             Name: trading_point, Length: 68, dtype: float64
         """
-        today_element_df = rawtick.get(exch, ins, day_data)
+        today_element_df = pickle.loads(rawtick.get(exch, ins, day_data))
 
         #print(today_element_df)
         if today_element_df.size > 0:
@@ -141,14 +146,14 @@ class tradePoint():
         return tradepoint_df
 
     def generate_all(self, keyword = ''):
-        for exch in os.listdir(citic_dst_path):
-            exch_day_path = citic_dst_path + "/" + exch + "/" + exch
+        for exch in os.listdir(database_path):
+            exch_day_path = database_path + "/" + exch + "/" + exch
             for ins in os.listdir(exch_day_path):
                 ins_path = exch_day_path + "/" + ins
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
-                        dir_path = '%s/tradepoint/tradepoint/%s/%s'%(citic_nature_path, exch, ins)
+                        dir_path = '%s/tradepoint/tradepoint/%s/%s'%(nature_path, exch, ins)
                         day_data = ins_data.split('.')[0].split('_')[-1]
                         self.generate(exch, ins, day_data, save_path=dir_path)
 
@@ -179,7 +184,7 @@ class tradePoint():
             2021-06-15 21:51:41.100    2518.0
             ...
         """
-        root_path = '%s/tradepoint/tradepoint/%s/%s'%(citic_nature_path, exch, ins)
+        root_path = '%s/tradepoint/tradepoint/%s/%s'%(nature_path, exch, ins)
         want_file_list = os.path.join(root_path, '%s_%s.csv'%(ins, day_data))
         file_data = pd.DataFrame(columns = ["Timeindex", "trading_point"])
         try:

@@ -26,5 +26,5 @@ class remote(object):
         return info.get_exchange()
 
 s = zerorpc.Server(remote())
-s.bind("tcp://192.168.16.7:11332")
+s.bind("tcp://127.0.0.1:11332")
 s.run()
