@@ -27,32 +27,41 @@ class tradePoint():
     def _find_min_ticksize(self, element_df):
         temp_diff = np.diff(element_df)
         need_list = [abs(item) for item in temp_diff if item != 0]
-        return min(need_list)
+        if len(need_list) > 0:
+            return min(need_list)
+        else:
+            return 0.0
 
     # 确定所有ask-bid_trading_point
     def _ask_bid_trading_point_df(self, element_df, ticksize_):
         if 'AskPrice1' in element_df.columns and 'BidPrice1' in element_df.columns:
-            temp_list = [row for index, row in element_df.iterrows() if abs(row['AskPrice1']-row['BidPrice1']) == ticksize_]
+            temp_list = [row for index, row in element_df.iterrows() if math.isclose(abs(row['AskPrice1']-row['BidPrice1']), ticksize_, rel_tol=0.000001) == True]
             temp_df = pd.DataFrame(temp_list)
-            temp_df['AskPrice1_change'] = temp_df['AskPrice1'].diff()
-            up_df = (temp_df.loc[temp_df['AskPrice1_change'] > 0]).copy()
-            down_df = (temp_df.loc[temp_df['AskPrice1_change'] < 0]).copy()
+            if temp_df.size > 0:
+                temp_df['AskPrice1_change'] = temp_df['AskPrice1'].diff()
+                up_df = (temp_df.loc[temp_df['AskPrice1_change'] > 0]).copy()
+                down_df = (temp_df.loc[temp_df['AskPrice1_change'] < 0]).copy()
 
-            up_df['trading_point'] = up_df['AskPrice1']
-            down_df['trading_point'] = down_df['BidPrice1']
-            ret_df = up_df.append(down_df).sort_index()
+                up_df['trading_point'] = up_df['AskPrice1']
+                down_df['trading_point'] = down_df['BidPrice1']
+                ret_df = up_df.append(down_df).sort_index()
+            else:
+                ret_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
+
 
         elif 'AskPrice' in element_df.columns and 'BidPrice' in element_df.columns:
-            temp_list = [row for index, row in element_df.iterrows() if abs(row['AskPrice']-row['BidPrice']) == ticksize_]
+            temp_list = [row for index, row in element_df.iterrows() if math.isclose(abs(row['AskPrice']-row['BidPrice']), ticksize_, rel_tol=0.000001) == True]
             temp_df = pd.DataFrame(temp_list)
+            if temp_df.size > 0:
+                temp_df['AskPrice_change'] = temp_df['AskPrice'].diff()
+                up_df = (temp_df.loc[temp_df['AskPrice_change'] > 0]).copy()
+                down_df = (temp_df.loc[temp_df['AskPrice_change'] < 0]).copy()
 
-            temp_df['AskPrice_change'] = temp_df['AskPrice'].diff()
-            up_df = (temp_df.loc[temp_df['AskPrice_change'] > 0]).copy()
-            down_df = (temp_df.loc[temp_df['AskPrice_change'] < 0]).copy()
-
-            up_df['trading_point'] = up_df['AskPrice']
-            down_df['trading_point'] = down_df['BidPrice']
-            ret_df = up_df.append(down_df).sort_index()
+                up_df['trading_point'] = up_df['AskPrice']
+                down_df['trading_point'] = down_df['BidPrice']
+                ret_df = up_df.append(down_df).sort_index()
+            else:
+                ret_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
 
         return ret_df
 
@@ -121,25 +130,25 @@ class tradePoint():
         """
         today_element_df = pickle.loads(rawtick.get(exch, ins, day_data))
 
-        #print(today_element_df)
-        if today_element_df.size > 0:
+        if today_element_df.size > 1:
             # 提取数据中的ask-bid-trading-point
-            #print(today_element_df)
             ticksize = self._find_min_ticksize(today_element_df['LastPrice'])
             today_trading_point_df = self._ask_bid_trading_point_df(today_element_df, ticksize)
-            #print(today_trading_point_df)
 
-            if include_extern_word == False:
-                tradepoint_df = today_trading_point_df['trading_point']
+            if today_trading_point_df.size > 0:
+                if include_extern_word == False:
+                    tradepoint_df = today_trading_point_df['trading_point']
+                else:
+                    tradepoint_df = today_trading_point_df
+
+                if save_path != '':
+                    if not os.path.exists(save_path):
+                        os.makedirs(save_path)
+
+                    _path = '%s/%s_%s.csv' % (save_path, ins, day_data)
+                    self._save(tradepoint_df, _path)
             else:
                 tradepoint_df = today_trading_point_df
-
-            if save_path != '':
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
-
-                _path = '%s/%s_%s.csv' % (save_path, ins, day_data)
-                self._save(tradepoint_df, _path)
         else:
             tradepoint_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
 

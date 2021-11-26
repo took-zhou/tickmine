@@ -1,5 +1,5 @@
 import zerorpc
-import os
+import socket
 
 from tickmine.content.raw_tick import rawtick
 from tickmine.content.trade_point import tradepoint
@@ -26,5 +26,7 @@ class remote(object):
         return info.get_exchange()
 
 s = zerorpc.Server(remote())
-s.bind("tcp://127.0.0.1:11332")
+hostname = socket.gethostname()
+ip = socket.gethostbyname(hostname)
+s.bind("tcp://%s:11332"%(ip))
 s.run()
