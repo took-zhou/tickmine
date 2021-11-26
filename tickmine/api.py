@@ -1,7 +1,11 @@
 import zerorpc
 import pickle
+import os
 
-from tickmine.global_config import client_api_address
+if "client_api_address" in os.environ:
+    client_api_address = os.getenv('client_api_address')
+else:
+    from tickmine.global_config import client_api_address
 
 def get_rawtick(exch, ins, day_data, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
