@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import sys
 import pickle
 import datetime
 
@@ -314,5 +315,7 @@ class K_line():
 kline = K_line()
 
 if __name__=="__main__":
-    kdata = kline.generate_all()
-    print(kdata)
+    if len(sys.argv) == 2:
+        kdata = kline.generate_all(sys.argv[1])
+    else:
+        kdata = kline.generate_all()

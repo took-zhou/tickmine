@@ -17,8 +17,8 @@ class rawTick():
         self.leap_month_days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30 ,31]
         self.common_month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30 ,31]
 
-    def _save(self, rawtick, path):
-        rawtick.to_csv(path)
+    def _save(self, _rawtick, path):
+        _rawtick.to_csv(path)
 
     #读取该csv文件对于的分时数据
     def _daytime_raw_data_reading(self, daytime_file_root):
@@ -88,8 +88,6 @@ class rawTick():
             else:
                 time_string = subprice['Time']
 
-            prev_second = ''
-            prev_ms = ''
             for hour_minute_second_ms in time_string.values.tolist():
                 hour = hour_minute_second_ms[0:2]
                 minute = hour_minute_second_ms[3:5]
@@ -98,10 +96,7 @@ class rawTick():
                     ms = hour_minute_second_ms[9:]
                 else:
                     ms = '000'
-                if second == prev_second and (ms == '0' or ms == '00' or ms == '000'):
-                    ms = str(int(prev_ms)+100)
-                prev_second = second
-                prev_ms = ms
+
                 year = date[0:4]
                 month = date[4:6]
 

@@ -5,6 +5,7 @@ import os
 import math
 import numpy as np
 import pickle
+import sys
 
 if os.environ.get('database') == 'citic':
     from tickmine.global_config import citic_dst_path as database_path
@@ -21,8 +22,8 @@ class tradePoint():
     def __init__(self):
         self.period2file = {'1T':'m1', '5T':'m5', '10T':'m10', '15T':'m15', '30T':'m30', '60T':'m60', '1D':'d1'}
 
-    def _save(self, rawtick, path):
-        rawtick.to_csv(path)
+    def _save(self, _tradepoint, path):
+        _tradepoint.to_csv(path)
 
     def _find_min_ticksize(self, element_df):
         temp_diff = np.diff(element_df)
@@ -46,7 +47,7 @@ class tradePoint():
                 down_df['trading_point'] = down_df['BidPrice1']
                 ret_df = up_df.append(down_df).sort_index()
             else:
-                ret_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
+               ret_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
 
 
         elif 'AskPrice' in element_df.columns and 'BidPrice' in element_df.columns:
@@ -63,6 +64,7 @@ class tradePoint():
             else:
                 ret_df = pd.Series(data=None, index=None, dtype='float64', name='trading_point')
 
+        ret_df.index.name = 'Timeindex'
         return ret_df
 
     def _get_night_data(self, _data):
@@ -213,4 +215,7 @@ class tradePoint():
 tradepoint = tradePoint()
 
 if __name__=="__main__":
-    tradepoint.generate_all()
+    if len(sys.argv) == 2:
+        tradepoint.generate_all(sys.argv[1])
+    else:
+        tradepoint.generate_all()
