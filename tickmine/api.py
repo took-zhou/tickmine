@@ -28,6 +28,13 @@ def get_tradepoint(exch, ins, day_data, time_slice=[], client_api=client_api_add
     c.close()
     return temp
 
+def get_level1(exch, ins, day_data, time_slice=[], client_api=client_api_address):
+    c = zerorpc.Client(timeout=300, heartbeat=None)
+    c.connect(client_api)
+    temp = pickle.loads(c.level1( exch, ins, day_data, time_slice))
+    c.close()
+    return temp
+
 def get_date(exch, ins, client_api=client_api_address):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api)

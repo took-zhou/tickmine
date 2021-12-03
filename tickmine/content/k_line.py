@@ -266,6 +266,7 @@ class K_line():
             exch_day_path = database_path + "/" + exch + "/" + exch
             for ins in os.listdir(exch_day_path):
                 ins_path = exch_day_path + "/" + ins
+                print('generate %s %s'%(exch, ins))
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
