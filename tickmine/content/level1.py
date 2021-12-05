@@ -44,13 +44,13 @@ class Level1():
             else:
                 ret_df = pd.Series(data=None, index=None, dtype='float64', name='ask_bid')
 
-
         elif 'AskPrice' in element_df.columns and 'BidPrice' in element_df.columns:
             temp_list = [row for index, row in element_df.iterrows() if math.isclose(abs(row['AskPrice']-row['BidPrice']), ticksize_, rel_tol=0.000001) == True]
             temp_df = pd.DataFrame(temp_list)
             if temp_df.size > 0:
                 temp_df['AskPrice_change'] = temp_df['AskPrice'].diff()
                 ret_df = (temp_df.loc[temp_df['AskPrice_change'] != 0]).copy()
+                ret_df.rename(columns={'AskPrice': 'AskPrice1', 'AskVolume': 'AskVolume1', 'BidPrice': 'BidPrice1', 'BidVolume': 'BidVolume1'}, inplace=True)
             else:
                 ret_df = pd.Series(data=None, index=None, dtype='float64', name='ask_bid')
 
