@@ -188,6 +188,12 @@ class rawTick():
             # 对已经读取的分时数据设置毫秒级别的时间index
             subprice = self._millisecond_timeindex_setting(subprice, day_data)
 
+            # 剔除时间不对的数据
+            if len(subprice) > 0:
+                time_wrong_index = [item for item in subprice.index if not('08:00:00' <= str(item).split(' ')[-1] <= '16:30:00')]
+                if len(time_wrong_index) > 0:
+                    subprice.drop(time_wrong_index, inplace = True)
+
             subprice_daytime = subprice
             #读取昨天夜晚分时数据,并将昨天夜晚数据和与白天数据合并
             if os.path.exists(ins_nighttime_file_root) == True:
@@ -195,6 +201,12 @@ class rawTick():
                 subprice = self._nighttime_raw_data_reading(ins_nighttime_file_root)
                 # 对已经读取的分时数据设置毫秒级别的时间index
                 subprice = self._millisecond_timeindex_setting(subprice, night_date)
+
+                # 剔除时间不对的数据
+                if len(subprice) > 0:
+                    time_wrong_index = [item for item in subprice.index if not('20:00:00' <= str(item).split(' ')[-1] or str(item).split(' ')[-1] <= '03:30:00')]
+                    if len(time_wrong_index) > 0:
+                        subprice.drop(time_wrong_index, inplace = True)
 
                 subprice_nighttime = subprice
                 # 白天数据与晚上数据合并为一个dataframe
@@ -224,5 +236,5 @@ class rawTick():
 rawtick = rawTick()
 
 if __name__=="__main__":
-    points = rawtick.get('CZCE', 'AP201', '20211124')
+    points = rawtick.get('DCE', 'p1704', '20170113')
     print(pickle.loads(points))

@@ -139,6 +139,17 @@ def show_tick_page():
         st.write('tradepoint, loading time: `%f`'%(run_time))
         st.write(tradepoint_df)
 
+    if exch_option == 'CZCE':
+        st.write('http://www.czce.com.cn/cn/jysj/mrhq/H770301index_1.htm')
+    elif exch_option == 'DCE':
+        st.write('http://www.dce.com.cn/dalianshangpin/xqsj/tjsj26/rtj/rxq/index.html')
+    elif exch_option == 'SHFE':
+        st.write('http://www.shfe.com.cn/statements/dataview.html?paramid=kx')
+    elif exch_option == 'CFFEX':
+        st.write('http://www.cffex.com.cn/rtj/')
+    elif exch_option == 'INE':
+        st.write('http://www.ine.cn/statements/daily/?paramid=kx')
+
 st.set_page_config(page_title='onepiece operation control', layout='wide', page_icon="..")
 
 genre = st.sidebar.selectbox('operation', ['show', 'reconstruct'])
