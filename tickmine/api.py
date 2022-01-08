@@ -66,7 +66,11 @@ def get_date(exch, ins):
     b_temp = c.date(exch, ins)
     c.close()
 
-    ret = a_temp+b_temp[b_temp.index(a_temp[-1])+1:]
+    if a_temp[-1] in b_temp:
+        ret = a_temp+b_temp[b_temp.index(a_temp[-1])+1:]
+    else:
+        ret = a_temp
+
     return ret
 
 def get_ins(exch, special_type = ''):
