@@ -266,11 +266,11 @@ class K_line():
             exch_day_path = database_path + "/" + exch + "/" + exch
             for ins in os.listdir(exch_day_path):
                 ins_path = exch_day_path + "/" + ins
-                print('generate %s %s'%(exch, ins))
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
                         day_data = ins_data.split('.')[0].split('_')[-1]
+                        print('generate %s %s %s'%(exch, ins, day_data))
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1T'], exch, ins)
                         self.generate(exch, ins, day_data, '1T', subject='lastprice', save_path=dir_path)
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1D'], exch, ins)

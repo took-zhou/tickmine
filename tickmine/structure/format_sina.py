@@ -6,11 +6,7 @@ import json
 from tickmine.structure import util
 
 instrument_case_match = {
-    'CZCE': 'up',
-    'DCE': 'low',
-    'SHFE': 'low',
-    'INE': 'low',
-    'CFFEX': 'up'
+    'global': 'up'
 }
 
 def untar(fname, dirs):
@@ -102,23 +98,23 @@ def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight:bool=Fals
                 sourceFile = tmpExchangeDir + "/" + file
                 targetFileName =buildTargetFileName(comPresFile,newDataRootPath,file,exchangeDir, isNight)
                 destDir = targetFileName[0:targetFileName.rfind("/")]
+
                 if (not os.path.exists(destDir)):
                     os.makedirs(destDir)
                 util.copyFile(sourceFile, targetFileName)
-                #print('copy %s to %s'%(sourceFile, targetFileName))
+                # print('copy %s to %s'%(sourceFile, targetFileName))
         util.delDir(tmp_uncompress_dir)
         updateRecordInfo(dataRootPath, recordFileName, comPresFile)
 
     print("reconstruct ok!")
 
 def main():
-    from tickmine.global_config import tsaodai_src_path
-    from tickmine.global_config import tsaodai_dst_path
+    from tickmine.global_config import sina_src_path
+    from tickmine.global_config import sina_dst_path
 
     recordFileName = "record.json"
 
-    reconstruct("%s/day"%(tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=False)
-    reconstruct("%s/night"%(tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=True)
+    reconstruct("%s/day"%(sina_src_path), sina_dst_path, recordFileName, isNight=False)
 
 if __name__=="__main__":
     main()

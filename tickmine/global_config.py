@@ -5,3 +5,7 @@ citic_nature_path = '/share/baidunetdisk/citic/naturedata'
 tsaodai_src_path = '/share/baidunetdisk/tsaodai/tsaodai_ticks'
 tsaodai_dst_path = '/share/baidunetdisk/tsaodai/reconstruct/tick'
 tsaodai_nature_path = '/share/baidunetdisk/tsaodai/naturedata'
+
+sina_src_path = '/share/baidunetdisk/sina/sina_ticks'
+sina_dst_path = '/share/baidunetdisk/sina/reconstruct/tick'
+sina_nature_path = '/share/baidunetdisk/sina/naturedata'

@@ -145,12 +145,12 @@ class Level1():
             exch_day_path = database_path + "/" + exch + "/" + exch
             for ins in os.listdir(exch_day_path):
                 ins_path = exch_day_path + "/" + ins
-                print('generate %s %s'%(exch, ins))
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
                         dir_path = '%s/tradepoint/askbidpair/%s/%s'%(nature_path, exch, ins)
                         day_data = ins_data.split('.')[0].split('_')[-1]
+                        print('generate %s %s %s'%(exch, ins, day_data))
                         self.generate(exch, ins, day_data, save_path=dir_path)
 
     def get(self, exch, ins, day_data, time_slice=[]):

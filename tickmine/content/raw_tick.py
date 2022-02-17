@@ -9,6 +9,8 @@ if os.environ.get('database') == 'tsaodai':
     from tickmine.global_config import tsaodai_dst_path as database_path
 elif os.environ.get('database') == 'citic':
     from tickmine.global_config import citic_dst_path as database_path
+elif os.environ.get('database') == 'sina':
+    from tickmine.global_config import sina_dst_path as database_path
 
 pd.set_option('display.max_rows', None)
 
@@ -63,6 +65,27 @@ class rawTick():
 
         if '16:00:00' <= _time[1] <= '24:00:00':
             ret[1] = datetime.datetime.strptime(self._get_night_data(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+
+        return ret
+
+    def _get_time_slice_sina(self, _data, _time):
+        ret = ['', '']
+
+        if '00:00:00' <= _time[0] <= '06:00:00':
+            one_day_after = pd.to_datetime(_data, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[0] = datetime.datetime.strptime(one_day_after_str + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+
+        if '00:00:00' <= _time[1] <= '06:00:00':
+            one_day_after = pd.to_datetime(_data, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[1] = datetime.datetime.strptime(one_day_after_str + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
         else:
             ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
@@ -151,24 +174,13 @@ class rawTick():
 
         return subprice
 
-    def get(self, exch, ins, day_data, time_slice=[]):
-        """ 获取分数数据
+    def _millisecond_timeindex_setting_sina(self, subprice, date):
+        time_series = pd.to_datetime(subprice['日期'] + subprice['行情时间'], format='%Y-%m-%d%H:%M:%S')
+        subprice['Timeindex'] = time_series.tolist()
+        subprice = subprice.set_index('Timeindex')
+        return subprice
 
-        获取分时数据，打上timeindex标签
-
-        Args:
-            exch: 交易所简称
-            ins: 合约代码
-            day_data: 日期
-            include_night: 是否包含夜市数据
-
-        Returns:
-            返回的数据格式是 dataframe 格式，包含分数数据信息
-
-        Examples:
-            >>> from tickmine.content.raw_tick import rawtick
-            >>> rawtick.get('SHFE', 'cu2109', '20210329', include_night=True)
-        """
+    def get_ctp(self, exch, ins, day_data, time_slice=[]):
         night_date = self._get_night_data(day_data)
 
         # 2018年2月1号之后的夜市文件名称和日市文件名称相同
@@ -233,8 +245,55 @@ class rawTick():
 
         return pickle.dumps(element_df)
 
+    def get_sina(self, exch, ins, day_data, time_slice=[]):
+        ins_daytime_file_root = '%s/%s/%s/%s/%s_%s.csv'%(database_path, exch, exch, ins, ins, day_data)
+        element_df = pd.DataFrame()
+
+        if os.path.exists(ins_daytime_file_root) == True:
+            # 读取白天数据
+            subprice = self._daytime_raw_data_reading(ins_daytime_file_root)
+
+            #print(subprice)
+            subprice = self._millisecond_timeindex_setting_sina(subprice, day_data)
+
+            subprice.rename(columns={'名称': 'InstrumentID', '最新价': 'LastPrice', '人民币报价': 'LastPrice(rmb)', '涨跌额': 'Increase', \
+                '涨跌幅': 'IncreaseRatio', '开盘价': 'OpenPrice', '最高价': 'HighestPrice', '最低价': 'LowestPrice', '昨日结算价': 'PreSettlementPrice',\
+                '持仓量':'OpenInterest', '买价':'BidPrice1', '卖价':'AskPrice1', '行情时间':'UpdateTime', '日期': 'TradingDay'}, inplace=True)
+
+            if subprice.size != 0:
+                element_df = subprice.sort_index()
+
+        if len(time_slice) == 2:
+            _time_slice = self._get_time_slice_sina(day_data, time_slice)
+            element_df = element_df.truncate(before = _time_slice[0], after = _time_slice[1])
+
+        return pickle.dumps(element_df)
+
+    def get(self, exch, ins, day_data, time_slice=[]):
+        """ 获取分数数据
+
+        获取分时数据，打上timeindex标签
+
+        Args:
+            exch: 交易所简称
+            ins: 合约代码
+            day_data: 日期
+            include_night: 是否包含夜市数据
+
+        Returns:
+            返回的数据格式是 dataframe 格式，包含分数数据信息
+
+        Examples:
+            >>> from tickmine.content.raw_tick import rawtick
+            >>> rawtick.get('SHFE', 'cu2109', '20210329', include_night=True)
+        """
+        if os.environ.get('database') == 'sina':
+            return self.get_sina(exch, ins, day_data, time_slice)
+        else:
+            return self.get_ctp(exch, ins, day_data, time_slice)
+
 rawtick = rawTick()
 
 if __name__=="__main__":
-    points = rawtick.get('DCE', 'p1704', '20170113')
-    print(pickle.loads(points))
+    points = rawtick.get('global', 'CL', '20220215', ['23:59:00', '01:00:00'])
+    print(pickle.loads(points)[0:100])

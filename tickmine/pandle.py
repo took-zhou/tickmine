@@ -3,6 +3,8 @@ import os
 import re
 from time import *
 import plotly.graph_objs as go
+import requests
+import pandas as pd
 
 from tickmine.global_config import citic_nature_path
 from tickmine.global_config import citic_dst_path
@@ -129,7 +131,23 @@ def show_tick_page():
         end_time = time()
         run_time = end_time-begin_time
         st.write('1d kline, loading time: `%f`'%(run_time))
+        st.write('from tsaodai:')
         st.write(kline_df)
+
+        params = {
+            "start_date": data_option,
+            "end_date": data_option,
+            "market": exch_option,
+            "index_bar": False
+        }
+        ret = requests.get('http://192.168.0.102:8205/api/get_futures_daily', params=params, timeout=1).json()
+        for item in ret:
+            if item['symbol'].lower() == ins_option.lower():
+                ret = pd.DataFrame([item], index=[item['date']])
+                ret.drop(columns=['symbol', 'date', 'turnover', 'settle', 'pre_settle', 'variety'], inplace=True)
+                st.write('from aktools')
+                st.write(ret)
+                break
 
     elif genre == 'treadepoint':
         begin_time = time()
