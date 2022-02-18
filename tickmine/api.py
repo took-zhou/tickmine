@@ -4,6 +4,7 @@ import datetime
 
 client_api_first = 'tcp://192.168.0.102:8100'
 client_api_second = 'tcp://192.168.0.102:8101'
+client_api_third = 'tcp://192.168.0.102:8150'
 
 try:
     c = zerorpc.Client(timeout=1, heartbeat=None)
@@ -13,13 +14,18 @@ try:
 except:
     client_api_first = 'tcp://onepiece.cdsslh.com:6007'
     client_api_second = 'tcp://onepiece.cdsslh.com:6008'
+    client_api_third = 'tcp://onepiece.cdsslh.com:6009'
 
 def get_rawtick(exch, ins, day_data, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
-    if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
-        c.connect(client_api_first)
+
+    if exch == 'global':
+        c.connect(client_api_third)
     else:
-        c.connect(client_api_second)
+        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+            c.connect(client_api_first)
+        else:
+            c.connect(client_api_second)
     temp = pickle.loads(c.rawtick(exch, ins, day_data, time_slice))
     c.close()
     return temp

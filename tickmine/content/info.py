@@ -6,6 +6,7 @@ if os.environ.get('database') == 'tsaodai':
     from tickmine.global_config import tsaodai_dst_path as database_path
 elif os.environ.get('database') == 'citic':
     from tickmine.global_config import citic_dst_path as database_path
+from tickmine.global_config import sina_dst_path as sina_database_path
 
 class Info:
     def __init__(self):
@@ -27,7 +28,11 @@ class Info:
             ['20200716', '20210205', ... '20200902', '20210428', '20210506', '20210426']
         """
         ret = []
-        self.absolute_path = '%s/%s/%s/%s'%(database_path, exch, exch, ins)
+        if exch == 'global':
+            self.absolute_path = '%s/%s/%s/%s'%(sina_database_path, exch, exch, ins)
+        else:
+            self.absolute_path = '%s/%s/%s/%s'%(database_path, exch, exch, ins)
+
         if os.path.exists(self.absolute_path) == False:
             sorted_data = []
         else:
@@ -54,17 +59,23 @@ class Info:
             >>> info.get_instrument('DCE')
            ['c2109', 'pg2109', ... 'jm2105', 'pp2007', 'pp2111', 'eb2204']
         """
-        self.absolute_path = '%s/%s/%s'%(database_path, exch, exch)
-        instrument_list = os.listdir(self.absolute_path)
-        if exch == 'CZCE':
-            ret_list1 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '5' <= item[-3] <= '9']
-            ret_list2 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '0' <= item[-3] < '5']
-            ret_list1.sort()
-            ret_list2.sort()
-            ret_list = ret_list1 + ret_list2
-        else:
+        if exch == 'global':
+            self.absolute_path = '%s/%s/%s'%(sina_database_path, exch, exch)
+            instrument_list = os.listdir(self.absolute_path)
             ret_list = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item)))]
             ret_list.sort()
+        else:
+            self.absolute_path = '%s/%s/%s'%(database_path, exch, exch)
+            instrument_list = os.listdir(self.absolute_path)
+            if exch == 'CZCE':
+                ret_list1 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '5' <= item[-3] <= '9']
+                ret_list2 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '0' <= item[-3] < '5']
+                ret_list1.sort()
+                ret_list2.sort()
+                ret_list = ret_list1 + ret_list2
+            else:
+                ret_list = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item)))]
+                ret_list.sort()
         return ret_list
 
     def get_exchange(self):
@@ -82,6 +93,8 @@ class Info:
            ['CZCE', 'CFFEX', 'INE', 'SHFE', 'DCE']
         """
         exch_list = os.listdir(database_path)
+        sina_list = os.listdir(sina_database_path)
+        exch_list = exch_list + sina_list
 
         return [item for item in exch_list if 'night' not in item]
 
