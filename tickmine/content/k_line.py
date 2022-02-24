@@ -108,7 +108,10 @@ class K_line():
 
         if today_element_df.size > 0:
             if subject == 'lastprice':
-                ohlcv['Open'] = [today_element_df['LastPrice'][0]]
+                if 'OpenPrice' in today_element_df.columns:
+                    ohlcv['Open'] = [today_element_df['OpenPrice'][-1]]
+                else:
+                    ohlcv['Open'] = [today_element_df['LastPrice'][0]]
                 ohlcv['High'] = [max(today_element_df['LastPrice'])]
                 ohlcv['Low'] = [min(today_element_df['LastPrice'])]
                 ohlcv['Close'] = [today_element_df['LastPrice'][-1]]

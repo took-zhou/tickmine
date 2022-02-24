@@ -83,3 +83,6 @@ def isFileInFileList(file,fileSet:set):
     if length1 != length2:
         return False
     return True
+
+if __name__=="__main__":
+    unrar_single('/share/baidunetdisk/citic/citic_ticks/DCE/DCE/2015/DCE_201510.rar', '.', None)

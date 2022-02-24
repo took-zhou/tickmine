@@ -54,8 +54,6 @@ def dealExtractFiles(tmpComFile:str, exchangeDir:str,isNight:bool):
             if not os.path.isdir(tmpLetterDir):
                 continue
             for fileName in os.listdir(tmpLetterDir):
-                if len(fileName.split('.')[0]) > 6:
-                    continue
                 # print("fileName",fileName)
                 instrumentFile = buildAbsoluteDir(tmpLetterDir, fileName)
                 # print("instrumentFile:",instrumentFile)

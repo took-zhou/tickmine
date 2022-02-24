@@ -69,8 +69,6 @@ def extractFiles(yearMonDir:str,exchangeDir:str,isNight:bool):
             print("tmpDateDir:",tmpDateDir)
             if os.path.isdir(tmpDateDir):
                 for fileName in os.listdir(tmpDateDir):
-                    if len(fileName.split('.')[0]) > 6:
-                        continue
                     # print("fileName",fileName)
                     instrumentFile = buildAbsoluteDir(tmpDateDir, fileName)
                     # print("instrumentFile:",instrumentFile)
@@ -194,8 +192,8 @@ def main(_time):
     os.system("echo 3 > /proc/sys/vm/drop_caches")
 
 if __name__=="__main__":
-    pass
-    # main('2015')
+    #pass
+    main('2015')
     # main('2016')
     # main('2017')
     # main('2018')
