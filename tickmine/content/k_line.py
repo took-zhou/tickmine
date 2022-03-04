@@ -68,23 +68,28 @@ class K_line():
             elif subject == 'lastprice':
                 bars = today_element_df['LastPrice'].resample(period, label='right').ohlc()
 
-            if 'TradeVolume' in today_element_df.columns:
-                volumes = today_element_df['TradeVolume'].resample(period, label='right').last() \
-                    - today_element_df['TradeVolume'].resample(period, label='right').first()
-            elif 'Volume' in today_element_df.columns:
-                volumes = today_element_df['Volume'].resample(period, label='right').last() \
-                    - today_element_df['Volume'].resample(period, label='right').first()
+            if ('TradeVolume' in today_element_df.columns or 'Volume' in today_element_df.columns) and 'OpenInterest' in  today_element_df.columns:
+                if 'TradeVolume' in today_element_df.columns:
+                    volumes = today_element_df['TradeVolume'].resample(period, label='right').last() \
+                        - today_element_df['TradeVolume'].resample(period, label='right').first()
+                elif 'Volume' in today_element_df.columns:
+                    volumes = today_element_df['Volume'].resample(period, label='right').last() \
+                        - today_element_df['Volume'].resample(period, label='right').first()
 
-            openInterest = today_element_df['OpenInterest'].resample(period, label='right').last() \
-                - today_element_df['OpenInterest'].resample(period, label='right').first()
+                openInterest = today_element_df['OpenInterest'].resample(period, label='right').last() \
+                    - today_element_df['OpenInterest'].resample(period, label='right').first()
 
-            ohlcv = pd.concat([bars, volumes, openInterest], axis=1)
-            if 'Volume' in ohlcv.columns:
-                ohlcv = ohlcv[ohlcv['Volume'] > 0].dropna()
+                ohlcv = pd.concat([bars, volumes, openInterest], axis=1)
+                if 'Volume' in ohlcv.columns:
+                    ohlcv = ohlcv[ohlcv['Volume'] > 0].dropna()
+                    ohlcv.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'}, inplace=True)
+                elif 'TradeVolume' in ohlcv.columns:
+                    ohlcv = ohlcv[ohlcv['TradeVolume'] > 0].dropna()
+                    ohlcv.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'TradeVolume': 'Volume'}, inplace=True)
+            else:
+                ohlcv = pd.concat([bars], axis=1)
+                ohlcv = ohlcv.dropna()
                 ohlcv.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'}, inplace=True)
-            elif 'TradeVolume' in ohlcv.columns:
-                ohlcv = ohlcv[ohlcv['TradeVolume'] > 0].dropna()
-                ohlcv.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'TradeVolume': 'Volume'}, inplace=True)
         else:
             ohlcv = pd.DataFrame({'open':[], 'High':[],'Low':[],'Close':[],'Volume':[], 'OpenInterest':[]})
             ohlcv.index.name = 'Timeindex'
@@ -121,12 +126,16 @@ class K_line():
                 ohlcv['Low'] = [min(today_element_df['trading_point'])]
                 ohlcv['Close'] = [today_element_df['trading_point'][-1]]
 
-            if 'Volume' in today_element_df.columns:
-                ohlcv['Volume'] = [today_element_df['Volume'][-1]]
-            elif 'TradeVolume' in today_element_df.columns:
-                ohlcv['Volume'] = [today_element_df['TradeVolume'][-1]]
-            ohlcv['OpenInterest'] = [today_element_df['OpenInterest'][-1]]
-            ohlcv.index=[today_element_df.index[-1].date()]
+            if ('TradeVolume' in today_element_df.columns or 'Volume' in today_element_df.columns) and 'OpenInterest' in  today_element_df.columns:
+                if 'Volume' in today_element_df.columns:
+                    ohlcv['Volume'] = [today_element_df['Volume'][-1]]
+                elif 'TradeVolume' in today_element_df.columns:
+                    ohlcv['Volume'] = [today_element_df['TradeVolume'][-1]]
+                ohlcv['OpenInterest'] = [today_element_df['OpenInterest'][-1]]
+            else:
+                del ohlcv['Volume']
+                del ohlcv['OpenInterest']
+            ohlcv.index=[today_element_df.index[0].date()]
             ohlcv.index.name = 'Timeindex'
 
         if save_path != '':
@@ -273,7 +282,7 @@ class K_line():
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
                         day_data = ins_data.split('.')[0].split('_')[-1]
-                        print('generate %s %s %s'%(exch, ins, day_data))
+                        print('kline generate %s %s %s'%(exch, ins, day_data))
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1T'], exch, ins)
                         self.generate(exch, ins, day_data, '1T', subject='lastprice', save_path=dir_path)
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1D'], exch, ins)

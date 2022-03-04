@@ -2,9 +2,17 @@ import zerorpc
 import pickle
 import datetime
 
+# 通过nginx反向代理到5个生产服务
 client_api_first = 'tcp://192.168.0.102:8100'
 client_api_second = 'tcp://192.168.0.102:8101'
 client_api_third = 'tcp://192.168.0.102:8150'
+
+# debug模式
+# client_api_first = 'tcp://192.168.0.102:8110'
+# client_api_second = 'tcp://192.168.0.102:8120'
+# client_api_third = 'tcp://192.168.0.102:8130'
+
+client_api_fourth = 'tcp://192.168.0.106:8150'
 
 try:
     c = zerorpc.Client(timeout=1, heartbeat=None)
@@ -15,12 +23,17 @@ except:
     client_api_first = 'tcp://onepiece.cdsslh.com:6007'
     client_api_second = 'tcp://onepiece.cdsslh.com:6008'
     client_api_third = 'tcp://onepiece.cdsslh.com:6009'
+    client_api_fourth = 'tcp://onepiece.cdsslh.com:6010'
 
 def get_rawtick(exch, ins, day_data, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
 
     if exch == 'global':
-        c.connect(client_api_third)
+        temp_dates = get_date(exch, ins)
+        if day_data in temp_dates:
+            c.connect(client_api_third)
+        else:
+            c.connect(client_api_fourth)
     else:
         if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
             c.connect(client_api_first)

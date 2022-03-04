@@ -150,7 +150,7 @@ class Level1():
                     if keyword in ins_data_path:
                         dir_path = '%s/tradepoint/askbidpair/%s/%s'%(nature_path, exch, ins)
                         day_data = ins_data.split('.')[0].split('_')[-1]
-                        print('generate %s %s %s'%(exch, ins, day_data))
+                        print('level1 generate %s %s %s'%(exch, ins, day_data))
                         self.generate(exch, ins, day_data, save_path=dir_path)
 
     def get(self, exch, ins, day_data, time_slice=[]):

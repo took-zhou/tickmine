@@ -60,12 +60,12 @@ class rawTick():
 
         if '16:00:00' <= _time[0] <= '24:00:00':
             ret[0] = datetime.datetime.strptime(self._get_night_data(_data) + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+        elif _time[0] != '':
             ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         if '16:00:00' <= _time[1] <= '24:00:00':
             ret[1] = datetime.datetime.strptime(self._get_night_data(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+        elif _time[1] != '':
             ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         return ret
@@ -78,7 +78,7 @@ class rawTick():
             split = str(one_day_after).split('-')
             one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
             ret[0] = datetime.datetime.strptime(one_day_after_str + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+        elif _time[0] != '':
             ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         if '00:00:00' <= _time[1] <= '06:00:00':
@@ -86,7 +86,7 @@ class rawTick():
             split = str(one_day_after).split('-')
             one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
             ret[1] = datetime.datetime.strptime(one_day_after_str + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+        elif _time[1] != '':
             ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         return ret
@@ -194,50 +194,60 @@ class rawTick():
         # 读取改天白天分时数据
         element_df = pd.DataFrame()
 
-        if os.path.exists(ins_daytime_file_root) == True:
-            # 读取白天数据
+        if os.path.exists(ins_daytime_file_root) == True and os.path.exists(ins_nighttime_file_root) == False:
             subprice = self._daytime_raw_data_reading(ins_daytime_file_root)
-            # 对已经读取的分时数据设置毫秒级别的时间index
             subprice = self._millisecond_timeindex_setting(subprice, day_data)
 
-            # 剔除时间不对的数据
             if len(subprice) > 0:
                 time_wrong_index = [item for item in subprice.index if not('08:00:00' <= str(item).split(' ')[-1] <= '16:30:00')]
                 if len(time_wrong_index) > 0:
                     subprice.drop(time_wrong_index, inplace = True)
 
-            subprice_daytime = subprice
-            #读取昨天夜晚分时数据,并将昨天夜晚数据和与白天数据合并
-            if os.path.exists(ins_nighttime_file_root) == True:
-                # 读取夜晚数据
-                subprice = self._nighttime_raw_data_reading(ins_nighttime_file_root)
-                # 对已经读取的分时数据设置毫秒级别的时间index
-                subprice = self._millisecond_timeindex_setting(subprice, night_date)
+            element_df = subprice.copy()
+        elif os.path.exists(ins_daytime_file_root) == False and os.path.exists(ins_nighttime_file_root) == True:
+            subprice = self._nighttime_raw_data_reading(ins_nighttime_file_root)
+            subprice = self._millisecond_timeindex_setting(subprice, night_date)
 
-                # 剔除时间不对的数据
-                if len(subprice) > 0:
-                    time_wrong_index = [item for item in subprice.index if not('20:00:00' <= str(item).split(' ')[-1] or str(item).split(' ')[-1] <= '03:30:00')]
-                    if len(time_wrong_index) > 0:
-                        subprice.drop(time_wrong_index, inplace = True)
+            if len(subprice) > 0:
+                time_wrong_index = [item for item in subprice.index if not('20:00:00' <= str(item).split(' ')[-1] or str(item).split(' ')[-1] <= '03:30:00')]
+                if len(time_wrong_index) > 0:
+                    subprice.drop(time_wrong_index, inplace = True)
 
-                subprice_nighttime = subprice
-                # 白天数据与晚上数据合并为一个dataframe
-                subprice = subprice_nighttime.append(subprice_daytime)
-            else:
-                subprice = subprice_daytime
+            element_df = subprice.copy()
+        elif os.path.exists(ins_daytime_file_root) == True and os.path.exists(ins_nighttime_file_root) == True:
+            subprice = self._daytime_raw_data_reading(ins_daytime_file_root)
+            subprice = self._millisecond_timeindex_setting(subprice, day_data)
 
-            # 剔除OpenPrice异常的数据
-            if subprice.size != 0 and 'OpenPrice' in subprice.columns:
-                subprice = subprice[np.isnan(subprice['OpenPrice']) == False]
-                subprice = subprice[subprice['OpenPrice'] != 0.0]
-                subprice = subprice[subprice['OpenPrice'] <= 100000000]
+            if len(subprice) > 0:
+                time_wrong_index = [item for item in subprice.index if not('08:00:00' <= str(item).split(' ')[-1] <= '16:30:00')]
+                if len(time_wrong_index) > 0:
+                    subprice.drop(time_wrong_index, inplace = True)
 
-            # 剔除TradeVolume为0的数据
-            if subprice.size != 0 and 'TradeVolume' in subprice.columns:
-                subprice = subprice[subprice['TradeVolume'] != 0.0]
+            subprice_daytime = subprice.copy()
 
-            if subprice.size != 0:
-                element_df = subprice.sort_index()
+            subprice = self._nighttime_raw_data_reading(ins_nighttime_file_root)
+            subprice = self._millisecond_timeindex_setting(subprice, night_date)
+
+            if len(subprice) > 0:
+                time_wrong_index = [item for item in subprice.index if not('20:00:00' <= str(item).split(' ')[-1] or str(item).split(' ')[-1] <= '03:30:00')]
+                if len(time_wrong_index) > 0:
+                    subprice.drop(time_wrong_index, inplace = True)
+
+            subprice = subprice.append(subprice_daytime)
+            element_df = subprice.copy()
+
+        # 剔除OpenPrice异常的数据
+        if element_df.size != 0 and 'OpenPrice' in element_df.columns:
+            element_df = element_df[np.isnan(element_df['OpenPrice']) == False]
+            element_df = element_df[element_df['OpenPrice'] != 0.0]
+            element_df = element_df[element_df['OpenPrice'] <= 100000000]
+
+        # 剔除TradeVolume为0的数据
+        if element_df.size != 0 and 'TradeVolume' in element_df.columns:
+            element_df = element_df[element_df['TradeVolume'] != 0.0]
+
+        if element_df.size != 0:
+            element_df = element_df.sort_index()
 
         if len(time_slice) == 2:
             _time_slice = self._get_time_slice(day_data, time_slice)
@@ -295,5 +305,5 @@ class rawTick():
 rawtick = rawTick()
 
 if __name__=="__main__":
-    points = rawtick.get('global', 'CL', '20220215', ['23:59:00', '01:00:00'])
+    points = rawtick.get('global', 'CL', '20220302', ['', '21:00:00'])
     print(pickle.loads(points)[0:100])
