@@ -10,6 +10,9 @@ if os.environ.get('database') == 'citic':
 elif os.environ.get('database') == 'tsaodai':
     from tickmine.global_config import tsaodai_dst_path as database_path
     from tickmine.global_config import tsaodai_nature_path as nature_path
+elif os.environ.get('database') == 'sina':
+    from tickmine.global_config import sina_dst_path as database_path
+    from tickmine.global_config import sina_nature_path as nature_path
 
 from tickmine.content.trade_point import tradepoint
 from tickmine.content.raw_tick import rawtick
@@ -135,7 +138,11 @@ class K_line():
             else:
                 del ohlcv['Volume']
                 del ohlcv['OpenInterest']
-            ohlcv.index=[today_element_df.index[0].date()]
+            
+            if exch == 'global':
+                ohlcv.index=[today_element_df.index[0].date()]
+            else:
+                ohlcv.index=[today_element_df.index[-1].date()]
             ohlcv.index.name = 'Timeindex'
 
         if save_path != '':
