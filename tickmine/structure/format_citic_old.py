@@ -78,6 +78,7 @@ def extractFiles(yearMonDir:str,exchangeDir:str,isNight:bool):
                     if (not os.path.exists(destDir)):
                         os.makedirs(destDir)
                     fixHeadError(instrumentFile)
+                    fixLastContainsCommasAndDoubleContextError(instrumentFile)
                     util.copyFile(instrumentFile, targetFileName)
 
 def isNightDir(subExchangeDir:str):
@@ -187,9 +188,9 @@ def main(_time):
                     print(f"begin deal with {tmpComFile}")
                     dealExtractFiles(tmpComFile,exchangeDir,isNight)
 
-    os.system("echo 1 > /proc/sys/vm/drop_caches")
-    os.system("echo 2 > /proc/sys/vm/drop_caches")
-    os.system("echo 3 > /proc/sys/vm/drop_caches")
+    # os.system("echo 1 > /proc/sys/vm/drop_caches")
+    # os.system("echo 2 > /proc/sys/vm/drop_caches")
+    # os.system("echo 3 > /proc/sys/vm/drop_caches")
 
 if __name__=="__main__":
     #pass

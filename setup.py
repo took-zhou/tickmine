@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="tickmine",
-    version="2.3.1",
+    version="2.4.1",
     author="zhoufan",
     author_email="zhoufan@cdsslh.com",
     description="data layer",
@@ -16,9 +16,7 @@ setup(
         'pandas>=1.1.5',
         'rarfile>=4.0',
         'setuptools>=39.0.1',
-        'streamlit>=1.1.0',
-        'zerorpc>=0.6.3',
-        'plotly>=5.4.0'
+        'zerorpc>=0.6.3'
     ],
 
     # 你要安装的包，通过 setuptools.find_packages 找到当前目录下有哪些包

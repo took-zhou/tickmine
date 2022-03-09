@@ -13,6 +13,9 @@ if os.environ.get('database') == 'citic':
 elif os.environ.get('database') == 'tsaodai':
     from tickmine.global_config import tsaodai_dst_path as database_path
     from tickmine.global_config import tsaodai_nature_path as nature_path
+elif os.environ.get('database') == 'sina':
+    from tickmine.global_config import sina_dst_path as database_path
+    from tickmine.global_config import sina_nature_path as nature_path
 
 from tickmine.content.raw_tick import rawtick
 
@@ -26,7 +29,11 @@ class Level1():
         _tradepoint.to_csv(path)
 
     def _find_min_ticksize(self, element_df):
-        temp_diff = np.diff(element_df)
+        if 'AskPrice1' in element_df.columns and 'BidPrice1' in element_df.columns:
+            temp_diff = element_df['AskPrice1'] - element_df['BidPrice1']
+        elif 'AskPrice' in element_df.columns and 'BidPrice' in element_df.columns:
+            temp_diff = element_df['AskPrice'] - element_df['BidPrice']
+
         need_list = [abs(item) for item in temp_diff if item != 0]
         if len(need_list) > 0:
             return min(need_list)
@@ -118,12 +125,15 @@ class Level1():
 
         if today_element_df.size > 1:
             # 提取数据中的ask-bid-pair
-            ticksize = self._find_min_ticksize(today_element_df['LastPrice'])
+            ticksize = self._find_min_ticksize(today_element_df)
             ask_bid_pair_df = self._ask_bid_trading_point_df(today_element_df, ticksize)
 
             if ask_bid_pair_df.size > 0:
                 if include_extern_word == False:
-                    ask_bid_df = ask_bid_pair_df[['BidPrice1', 'BidVolume1', 'AskPrice1', 'AskVolume1']]
+                    if 'BidVolume1' in ask_bid_pair_df.columns and 'AskVolume1' in ask_bid_pair_df.columns:
+                        ask_bid_df = ask_bid_pair_df[['BidPrice1', 'BidVolume1', 'AskPrice1', 'AskVolume1']]
+                    else:
+                        ask_bid_df = ask_bid_pair_df[['BidPrice1', 'AskPrice1']]
                 else:
                     ask_bid_df = ask_bid_pair_df
 
@@ -199,5 +209,3 @@ if __name__=="__main__":
         level1.generate_all(sys.argv[1])
     else:
         level1.generate_all()
-
-
