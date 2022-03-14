@@ -4,9 +4,13 @@ import re
 
 if os.environ.get('database') == 'tsaodai':
     from tickmine.global_config import tsaodai_dst_path as database_path
+    from tickmine.global_config import sina_dst_path as sina_database_path
 elif os.environ.get('database') == 'citic':
     from tickmine.global_config import citic_dst_path as database_path
-from tickmine.global_config import sina_dst_path as sina_database_path
+    from tickmine.global_config import sina_dst_path as sina_database_path
+elif os.environ.get('database') == 'sina':
+    from tickmine.global_config import citic_dst_path as database_path
+    from tickmine.global_config import sina_dst_path as sina_database_path
 
 class Info:
     def __init__(self):

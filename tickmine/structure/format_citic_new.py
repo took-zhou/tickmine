@@ -172,4 +172,4 @@ def main(_time):
                         dealExtractFiles(tmpComFile,exchangeDir,isNight)
 
 if __name__=="__main__":
-    main('202111')
+    main('202202')
