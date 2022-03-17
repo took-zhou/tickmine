@@ -172,4 +172,5 @@ def main(_time):
                         dealExtractFiles(tmpComFile,exchangeDir,isNight)
 
 if __name__=="__main__":
-    main('202202')
+    if len(sys.argv) == 2:
+        main(sys.argv[1])

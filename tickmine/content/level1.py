@@ -150,10 +150,12 @@ class Level1():
 
         return ask_bid_df
 
-    def generate_all(self, keyword = ''):
+    def generate_all(self, keyword = '', inclde_option = 'no'):
         for exch in os.listdir(database_path):
             exch_day_path = database_path + "/" + exch + "/" + exch
             for ins in os.listdir(exch_day_path):
+                if inclde_option == 'no' and len(ins) > 6:
+                    continue
                 ins_path = exch_day_path + "/" + ins
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data

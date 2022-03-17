@@ -68,10 +68,13 @@ def get_tradepoint(exch, ins, day_data, time_slice=[]):
 
 def get_level1(exch, ins, day_data, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
-    if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
-        c.connect(client_api_first)
+    if exch == 'global':
+        c.connect(client_api_third)
     else:
-        c.connect(client_api_second)
+        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+            c.connect(client_api_first)
+        else:
+            c.connect(client_api_second)
     temp = pickle.loads(c.level1( exch, ins, day_data, time_slice))
     c.close()
     return temp
