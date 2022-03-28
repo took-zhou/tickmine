@@ -1,6 +1,9 @@
 import zerorpc
 import pickle
 import datetime
+import re
+
+from tickmine.content.dominant import dominant
 
 # 通过nginx反向代理到5个生产服务
 client_api_first = 'tcp://192.168.0.102:8100'
@@ -39,7 +42,13 @@ def get_rawtick(exch, ins, day_data, time_slice=[]):
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
-    temp = pickle.loads(c.rawtick(exch, ins, day_data, time_slice))
+
+    if '999' in ins:
+        temp_ins = dominant.get_ins(exch, ins, day_data)
+        temp = pickle.loads(c.rawtick(exch, temp_ins, day_data, time_slice))
+    else:
+        temp = pickle.loads(c.rawtick(exch, ins, day_data, time_slice))
+
     c.close()
     return temp
 
@@ -52,17 +61,13 @@ def get_kline(exch, ins, day_data, time_slice=[], period = '1T', subject='lastpr
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
-    temp = pickle.loads(c.kline(exch, ins, day_data, time_slice, period, subject))
-    c.close()
-    return temp
 
-def get_tradepoint(exch, ins, day_data, time_slice=[]):
-    c = zerorpc.Client(timeout=300, heartbeat=None)
-    if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
-        c.connect(client_api_first)
+    if '999' in ins:
+        temp_ins = dominant.get_ins(exch, ins, day_data)
+        temp = pickle.loads(c.kline(exch, temp_ins, day_data, time_slice, period, subject))
     else:
-        c.connect(client_api_second)
-    temp = pickle.loads(c.tradepoint( exch, ins, day_data, time_slice))
+        temp = pickle.loads(c.kline(exch, ins, day_data, time_slice, period, subject))
+
     c.close()
     return temp
 
@@ -75,15 +80,19 @@ def get_level1(exch, ins, day_data, time_slice=[]):
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
-    temp = pickle.loads(c.level1( exch, ins, day_data, time_slice))
+
+    if '999' in ins:
+        temp_ins = dominant.get_ins(exch, ins, day_data)
+        temp = pickle.loads(c.level1( exch, temp_ins, day_data, time_slice))
+    else:
+        temp = pickle.loads(c.level1( exch, ins, day_data, time_slice))
     c.close()
     return temp
 
-def get_date(exch, ins):
+def get_ins_date(exch, ins):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api_first)
     a_temp = c.date(exch, ins)
-    c.connect(client_api_second)
     c.close()
 
     c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -92,11 +101,38 @@ def get_date(exch, ins):
     c.close()
 
     if a_temp[-1] in b_temp:
-        ret = a_temp+b_temp[b_temp.index(a_temp[-1])+1:]
+        ret = a_temp + b_temp[b_temp.index(a_temp[-1])+1:]
     else:
         ret = a_temp
 
     return ret
+
+def get_main_even_date(exch, ins):
+    temp = re.split('([0-9]+)', ins)[0]
+    ins_list = get_ins(exch, temp)
+    month_compose = dominant.get_compose(exch, temp)
+
+    temp_ret = []
+    for item in ins_list:
+        if item[-2:] in month_compose.keys():
+            temp_ret.append(item)
+
+    temp_date = []
+    for item in temp_ret:
+        date_list = get_ins_date(exch, item)
+        month_list = month_compose[item[-2:]]
+        ins_date = [item_date for item_date in date_list if item_date[4:6] in month_list and item_date[3]]
+        temp_date = temp_date + ins_date
+
+    ret_date = list(set(temp_date))
+    ret_date.sort()
+    return ret_date
+
+def get_date(exch, ins):
+    if '999' in ins:
+        return get_main_even_date(exch, ins)
+    else:
+        return get_ins_date(exch, ins)
 
 def get_ins(exch, special_type = ''):
     c = zerorpc.Client(timeout=300, heartbeat=None)
