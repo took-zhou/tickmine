@@ -28,7 +28,7 @@ class K_line():
     def _save(self, ohlcv, path):
         ohlcv.to_csv(path)
 
-    def _get_night_data(self, _data):
+    def _get_night_date(self, _data):
         ins_time_of_week = pd.to_datetime(_data, format = '%Y-%m-%d').dayofweek + 1
 
         if ins_time_of_week == 1:
@@ -48,13 +48,46 @@ class K_line():
         ret = ['', '']
 
         if '16:00:00' <= _time[0] <= '24:00:00':
-            ret[0] = datetime.datetime.strptime(self._get_night_data(_data) + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+            ret[0] = datetime.datetime.strptime(self._get_night_date(_data) + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif '00:00:00' <= _time[0] <= '03:00:00':
+            night_date = self._get_night_date(_data)
+            one_day_after = pd.to_datetime(night_date, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[0] = datetime.datetime.strptime(one_day_after_str + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif _time[0] != '':
             ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         if '16:00:00' <= _time[1] <= '24:00:00':
-            ret[1] = datetime.datetime.strptime(self._get_night_data(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
-        else:
+            ret[1] = datetime.datetime.strptime(self._get_night_date(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif '00:00:00' <= _time[1] <= '03:00:00':
+            night_date = self._get_night_date(_data)
+            one_day_after = pd.to_datetime(night_date, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[1] = datetime.datetime.strptime(one_day_after_str + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif _time[1] != '':
+            ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+
+        return ret
+
+    def _get_time_slice_sina(self, _data, _time):
+        ret = ['', '']
+
+        if '00:00:00' <= _time[0] <= '06:00:00':
+            one_day_after = pd.to_datetime(_data, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[0] = datetime.datetime.strptime(one_day_after_str + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif _time[0] != '':
+            ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+
+        if '00:00:00' <= _time[1] <= '06:00:00':
+            one_day_after = pd.to_datetime(_data, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[1] = datetime.datetime.strptime(one_day_after_str + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif _time[1] != '':
             ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         return ret
@@ -327,7 +360,10 @@ class K_line():
             file_data.pop('Timeindex')
 
             if len(time_slice) == 2:
-                _time_slice = self._get_time_slice(day_data, time_slice)
+                if os.environ.get('database') == 'sina':
+                    _time_slice = self._get_time_slice_sina(day_data, time_slice)
+                else:
+                    _time_slice = self._get_time_slice(day_data, time_slice)
                 file_data = file_data.truncate(before = _time_slice[0], after = _time_slice[1])
         except:
             pass

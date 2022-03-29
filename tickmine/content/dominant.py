@@ -30,6 +30,9 @@ class dominantFuture:
         self.dominant_compose4 = {'03': ['01'], '04': ['02'], '05': ['03'], '06': ['04'], '07': ['05'], '08': ['06'], \
             '09': ['07'], '10': ['08'], '11': ['09'], '12': ['10'], '01': ['11'], '02': ['12']}
         self.dominant_compose5 = {'01': ['09', '10', '11'], '04': ['12', '01', '02'], '10': ['04', '05', '06', '07', '08']}
+        self.dominant_compose6 = {'06': ['11', '12', '01', '02', '03', '04'], '12': ['05', '06', '07', '08', '09', '10']}
+        self.dominant_compose7 = {'03': ['12'], '04': ['01'], '05': ['02'], '06': ['03'], '07': ['04'], '08': ['05'], \
+            '09': ['06'], '10': ['07'], '11': ['08'], '12': ['09'], '01': ['10'], '02': ['11']}
 
         self.SHFE['cu'] = self.dominant_compose4
         self.SHFE['al'] = self.dominant_compose4
@@ -37,8 +40,8 @@ class dominantFuture:
         self.SHFE['pb'] = self.dominant_compose4
         self.SHFE['ni'] = self.dominant_compose4
         self.SHFE['sn'] = self.dominant_compose4
-        self.SHFE['au'] = self.dominant_compose4
-        self.SHFE['ag'] = self.dominant_compose4
+        self.SHFE['au'] = self.dominant_compose6
+        self.SHFE['ag'] = self.dominant_compose6
         self.SHFE['rb'] = self.dominant_compose4
         self.SHFE['wr'] = self.dominant_compose4
         self.SHFE['hc'] = self.dominant_compose4
@@ -97,7 +100,7 @@ class dominantFuture:
         self.DCE['lh'] = self.dominant_compose1
 
         self.INE['sc'] = self.dominant_compose4
-        self.INE['lu'] = self.dominant_compose4
+        self.INE['lu'] = self.dominant_compose7
         self.INE['nr'] = self.dominant_compose4
         self.INE['bc'] = self.dominant_compose4
 

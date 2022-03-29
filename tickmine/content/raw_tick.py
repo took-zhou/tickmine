@@ -39,7 +39,7 @@ class rawTick():
 
         return subprice
 
-    def _get_night_data(self, _data):
+    def _get_night_date(self, _data):
         ins_time_of_week = pd.to_datetime(_data, format = '%Y-%m-%d').dayofweek + 1
 
         if ins_time_of_week == 1:
@@ -59,12 +59,24 @@ class rawTick():
         ret = ['', '']
 
         if '16:00:00' <= _time[0] <= '24:00:00':
-            ret[0] = datetime.datetime.strptime(self._get_night_data(_data) + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+            ret[0] = datetime.datetime.strptime(self._get_night_date(_data) + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif '00:00:00' <= _time[0] <= '03:00:00':
+            night_date = self._get_night_date(_data)
+            one_day_after = pd.to_datetime(night_date, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[0] = datetime.datetime.strptime(one_day_after_str + _time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
         elif _time[0] != '':
             ret[0] = datetime.datetime.strptime(_data+_time[0], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
         if '16:00:00' <= _time[1] <= '24:00:00':
-            ret[1] = datetime.datetime.strptime(self._get_night_data(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+            ret[1] = datetime.datetime.strptime(self._get_night_date(_data) + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
+        elif '00:00:00' <= _time[1] <= '03:00:00':
+            night_date = self._get_night_date(_data)
+            one_day_after = pd.to_datetime(night_date, format = '%Y-%m-%d') + datetime.timedelta(days = 1)
+            split = str(one_day_after).split('-')
+            one_day_after_str = split[0] + split[1] + split[2].split(' ')[0]
+            ret[1] = datetime.datetime.strptime(one_day_after_str + _time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
         elif _time[1] != '':
             ret[1] = datetime.datetime.strptime(_data+_time[1], '%Y%m%d%H:%M:%S').strftime("%Y-%m-%d %H:%M:%S")
 
@@ -181,7 +193,7 @@ class rawTick():
         return subprice
 
     def get_ctp(self, exch, ins, day_data, time_slice=[]):
-        night_date = self._get_night_data(day_data)
+        night_date = self._get_night_date(day_data)
 
         # 2018年2月1号之后的夜市文件名称和日市文件名称相同
         if day_data < '20180201' and not('20161101' <= day_data <= '20161231'):
