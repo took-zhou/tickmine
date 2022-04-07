@@ -243,10 +243,7 @@ class Level1():
 level1 = Level1()
 
 if __name__=="__main__":
-    # if len(sys.argv) == 2:
-    #     level1.generate_all(sys.argv[1])
-    # else:
-    #     level1.generate_all()
-
-    ret = level1.get('SHFE', 'al2205', '20211227', time_slice=['00:00:00', '00:30:00'])
-    print(pickle.loads(ret))
+    if len(sys.argv) == 2:
+        level1.generate_all(sys.argv[1])
+    else:
+        level1.generate_all()
