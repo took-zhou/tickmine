@@ -89,6 +89,25 @@ def get_level1(exch, ins, day_data, time_slice=[]):
     c.close()
     return temp
 
+def get_mline(exch, ins, day_data):
+    c = zerorpc.Client(timeout=300, heartbeat=None)
+    if exch == 'global':
+        c.connect(client_api_third)
+    else:
+        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+            c.connect(client_api_first)
+        else:
+            c.connect(client_api_second)
+
+    if '999' in ins:
+        temp_ins = dominant.get_ins(exch, ins, day_data)
+        temp = pickle.loads(c.mline(exch, temp_ins, day_data))
+    else:
+        temp = pickle.loads(c.mline(exch, ins, day_data))
+
+    c.close()
+    return temp
+
 def get_ins_date(exch, ins):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api_first)

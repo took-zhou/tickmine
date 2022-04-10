@@ -115,5 +115,21 @@ def test_rawtick():
     ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227', time_slice=['00:00:00', '01:00:00'])
     assert(len(ret_rawtick) > 10)
 
+def test_mline():
+    ret_mline = get_mline('CZCE', 'TA105', '20210310')
+    assert(len(ret_mline) == 1)
+
+    ret_mline = get_mline('CFFEX', 'IC1912', '20190805')
+    assert(len(ret_mline) == 1)
+
+    ret_mline = get_mline('SHFE', 'al2101', '20200709')
+    assert(len(ret_mline) == 1)
+
+    ret_mline = get_mline('DCE', 'cs1705', '20161116')
+    assert(len(ret_mline) == 1)
+
+    ret_mline = get_mline('INE', 'nr2105', '20201104')
+    assert(len(ret_mline) == 1)
+
 if __name__ =="__main__":
     pytest.main()

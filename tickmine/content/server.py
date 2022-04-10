@@ -6,6 +6,7 @@ from tickmine.content.trade_point import tradepoint
 from tickmine.content.k_line import kline
 from tickmine.content.info import info
 from tickmine.content.level1 import level1
+from tickmine.content.m_line import mline
 
 class remote(object):
     def rawtick(self, exch, ins, day_data, time_slice=[]):
@@ -19,6 +20,9 @@ class remote(object):
 
     def level1(self, exch, ins, day_data, time_slice=[]):
         return level1.get(exch, ins, day_data, time_slice)
+
+    def mline(self, exch, ins, day_data):
+        return mline.get(exch, ins, day_data)
 
     def date(self, exch, ins):
         return info.get_date(exch, ins)
