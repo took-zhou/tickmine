@@ -245,5 +245,7 @@ level1 = Level1()
 if __name__=="__main__":
     if len(sys.argv) == 2:
         level1.generate_all(sys.argv[1])
+    elif len(sys.argv) == 3:
+        level1.generate_all(sys.argv[1], sys.argv[2])
     else:
         level1.generate_all()

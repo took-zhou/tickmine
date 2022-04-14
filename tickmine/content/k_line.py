@@ -375,5 +375,7 @@ kline = K_line()
 if __name__=="__main__":
     if len(sys.argv) == 2:
         kdata = kline.generate_all(sys.argv[1])
+    elif len(sys.argv) == 3:
+        kdata = kline.generate_all(sys.argv[1], sys.argv[2])
     else:
         kdata = kline.generate_all()

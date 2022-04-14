@@ -64,22 +64,68 @@ class Info:
            ['c2109', 'pg2109', ... 'jm2105', 'pp2007', 'pp2111', 'eb2204']
         """
         if exch == 'global':
-            self.absolute_path = '%s/%s/%s'%(sina_database_path, exch, exch)
-            instrument_list = os.listdir(self.absolute_path)
-            ret_list = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item)))]
-            ret_list.sort()
+            return self._get_global_instrument(exch, special_type)
+        elif '_' in special_type:
+            return self._get_option(exch, special_type)
         else:
-            self.absolute_path = '%s/%s/%s'%(database_path, exch, exch)
-            instrument_list = os.listdir(self.absolute_path)
-            if exch == 'CZCE':
-                ret_list1 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '5' <= item[-3] <= '9']
-                ret_list2 = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item))) and '0' <= item[-3] < '5']
-                ret_list1.sort()
-                ret_list2.sort()
-                ret_list = ret_list1 + ret_list2
-            else:
-                ret_list = [item for item in instrument_list if (special_type == '' or special_type == ''.join(re.findall(r'[A-Za-z]', item)))]
-                ret_list.sort()
+            return self._get_future(exch, special_type)
+
+    def _get_global_instrument(self, exch, special_type):
+        self.absolute_path = '%s/%s/%s'%(sina_database_path, exch, exch)
+        instrument_list = os.listdir(self.absolute_path)
+        ret_list = []
+        for item in instrument_list:
+            ins_split = [x.strip() for x in re.split(r'(\d+)', item) if x.strip() != '']
+            if (len(ins_split) == 1 and ins_split[0] == special_type) or special_type == '':
+                ret_list.append(item)
+
+        ret_list.sort()
+
+        return ret_list
+
+    def _get_future(self, exch, special_type):
+        self.absolute_path = '%s/%s/%s'%(database_path, exch, exch)
+        instrument_list = os.listdir(self.absolute_path)
+        ret_list1 = []
+        ret_list2 = []
+        for item in instrument_list:
+            ins_split = [x.strip().strip('-') for x in re.split(r'(\d+)', item) if x.strip() != '']
+            if len(ins_split) == 2:
+                if exch == 'CZCE':
+                    if (ins_split[0] == special_type or special_type == '') and '5' <= ins_split[1][0] <= '9':
+                        ret_list1.append(item)
+                    elif (ins_split[0] == special_type or special_type == '') and '0' <= ins_split[1][0] <= '5':
+                        ret_list2.append(item)
+                else:
+                    if (ins_split[0] == special_type or special_type == ''):
+                        ret_list1.append(item)
+        ret_list1.sort()
+        ret_list2.sort()
+        ret_list = ret_list1 + ret_list2
+
+        return ret_list
+
+    def _get_option(self, exch, special_type):
+        self.absolute_path = '%s/%s/%s'%(database_path, exch, exch)
+        instrument_list = os.listdir(self.absolute_path)
+        special_split = special_type.split('_')
+        ret_list1 = []
+        ret_list2 = []
+        for item in instrument_list:
+            ins_split = [x.strip().strip('-') for x in re.split(r'(\d+)', item) if x.strip() != '']
+            if len(ins_split) == 4:
+                if exch == 'CZCE':
+                    if (ins_split[0] == special_split[0] or special_type == '') and '5' <= ins_split[1][0] <= '9' and ins_split[2] == special_split[1]:
+                        ret_list1.append(item)
+                    elif (ins_split[0] == special_split[0] or special_type == '') and '0' <= ins_split[1][0] <= '5' and ins_split[2] == special_split[1]:
+                        ret_list2.append(item)
+                else:
+                    if (ins_split[0] == special_split[0] or special_type == '') and ins_split[2] == special_split[1]:
+                        ret_list1.append(item)
+        ret_list1.sort()
+        ret_list2.sort()
+        ret_list = ret_list1 + ret_list2
+
         return ret_list
 
     def get_exchange(self):

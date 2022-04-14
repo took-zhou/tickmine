@@ -116,5 +116,7 @@ mline = M_line()
 if __name__=="__main__":
     if len(sys.argv) == 2:
         mdata = mline.generate_all(sys.argv[1])
+    if len(sys.argv) == 3:
+        mdata = mline.generate_all(sys.argv[1], sys.argv[2])
     else:
         mdata = mline.generate_all()

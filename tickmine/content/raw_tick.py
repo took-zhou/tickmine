@@ -247,6 +247,16 @@ class rawTick():
             subprice = subprice.append(subprice_daytime)
             element_df = subprice.copy()
 
+        if len(element_df) > 0:
+            if 'AskPrice1' in element_df.columns and 'BidPrice1' in element_df.columns:
+                level1_wrong_index = [index for index, row in element_df.iterrows() if row['BidPrice1']==0.0 and row['AskPrice1']==0.0]
+                if len(level1_wrong_index) > 0:
+                    element_df.drop(level1_wrong_index, inplace = True)
+            elif 'AskPrice' in element_df.columns and 'BidPrice' in element_df.columns:
+                level1_wrong_index = [index for index, row in element_df.iterrows() if row['BidPrice']==0.0 and row['AskPrice']==0.0]
+                if len(level1_wrong_index) > 0:
+                    element_df.drop(level1_wrong_index, inplace = True)
+
         # 剔除OpenPrice异常的数据
         if element_df.size != 0 and 'OpenPrice' in element_df.columns:
             element_df = element_df[np.isnan(element_df['OpenPrice']) == False]
@@ -318,3 +328,16 @@ rawtick = rawTick()
 if __name__=="__main__":
     points = rawtick.get('global', 'CL', '20220302', ['', '21:00:00'])
     print(pickle.loads(points)[0:100])
+
+    # import sys
+    # for exch in os.listdir(database_path):
+    #     if sys.argv[1] != exch:
+    #         continue
+    #     exch_day_path = database_path + "/" + exch + "/" + exch
+    #     for ins in os.listdir(exch_day_path):
+    #         if len(ins) > 6:
+    #             continue
+    #         ins_path = exch_day_path + "/" + ins
+    #         for ins_data in os.listdir(ins_path):
+    #             day_data = ins_data.split('.')[0].split('_')[-1]
+    #             rawtick.get(exch, ins, day_data)

@@ -28,87 +28,87 @@ except:
     client_api_third = 'tcp://onepiece.cdsslh.com:6009'
     client_api_fourth = 'tcp://onepiece.cdsslh.com:6010'
 
-def get_rawtick(exch, ins, day_data, time_slice=[]):
+def get_rawtick(exch, ins, day_date, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
 
     if exch == 'global':
         temp_dates = get_date(exch, ins)
-        if day_data in temp_dates:
+        if day_date in temp_dates:
             c.connect(client_api_third)
         else:
             c.connect(client_api_fourth)
     else:
-        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+        if (datetime.datetime.strptime(day_date, "%Y%m%d")-datetime.datetime.today()).days < -45:
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
 
     if '999' in ins:
-        temp_ins = dominant.get_ins(exch, ins, day_data)
-        temp = pickle.loads(c.rawtick(exch, temp_ins, day_data, time_slice))
+        temp_ins = dominant.get_ins(exch, ins, day_date)
+        temp = pickle.loads(c.rawtick(exch, temp_ins, day_date, time_slice))
     else:
-        temp = pickle.loads(c.rawtick(exch, ins, day_data, time_slice))
+        temp = pickle.loads(c.rawtick(exch, ins, day_date, time_slice))
 
     c.close()
     return temp
 
-def get_kline(exch, ins, day_data, time_slice=[], period = '1T', subject='lastprice'):
+def get_kline(exch, ins, day_date, time_slice=[], period = '1T', subject='lastprice'):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     if exch == 'global':
         c.connect(client_api_third)
     else:
-        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+        if (datetime.datetime.strptime(day_date, "%Y%m%d")-datetime.datetime.today()).days < -45:
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
 
     if '999' in ins:
-        temp_ins = dominant.get_ins(exch, ins, day_data)
-        temp = pickle.loads(c.kline(exch, temp_ins, day_data, time_slice, period, subject))
+        temp_ins = dominant.get_ins(exch, ins, day_date)
+        temp = pickle.loads(c.kline(exch, temp_ins, day_date, time_slice, period, subject))
     else:
-        temp = pickle.loads(c.kline(exch, ins, day_data, time_slice, period, subject))
+        temp = pickle.loads(c.kline(exch, ins, day_date, time_slice, period, subject))
 
     c.close()
     return temp
 
-def get_level1(exch, ins, day_data, time_slice=[]):
+def get_level1(exch, ins, day_date, time_slice=[]):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     if exch == 'global':
         c.connect(client_api_third)
     else:
-        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+        if (datetime.datetime.strptime(day_date, "%Y%m%d")-datetime.datetime.today()).days < -45:
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
 
     if '999' in ins:
-        temp_ins = dominant.get_ins(exch, ins, day_data)
-        temp = pickle.loads(c.level1( exch, temp_ins, day_data, time_slice))
+        temp_ins = dominant.get_ins(exch, ins, day_date)
+        temp = pickle.loads(c.level1( exch, temp_ins, day_date, time_slice))
     else:
-        temp = pickle.loads(c.level1( exch, ins, day_data, time_slice))
+        temp = pickle.loads(c.level1( exch, ins, day_date, time_slice))
     c.close()
     return temp
 
-def get_mline(exch, ins, day_data):
+def get_mline(exch, ins, day_date):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     if exch == 'global':
         c.connect(client_api_third)
     else:
-        if (datetime.datetime.strptime(day_data, "%Y%m%d")-datetime.datetime.today()).days < -45:
+        if (datetime.datetime.strptime(day_date, "%Y%m%d")-datetime.datetime.today()).days < -45:
             c.connect(client_api_first)
         else:
             c.connect(client_api_second)
 
     if '999' in ins:
-        temp_ins = dominant.get_ins(exch, ins, day_data)
-        temp = pickle.loads(c.mline(exch, temp_ins, day_data))
+        temp_ins = dominant.get_ins(exch, ins, day_date)
+        temp = pickle.loads(c.mline(exch, temp_ins, day_date))
     else:
-        temp = pickle.loads(c.mline(exch, ins, day_data))
+        temp = pickle.loads(c.mline(exch, ins, day_date))
 
     c.close()
     return temp
 
-def get_ins_date(exch, ins):
+def _get_ins_date(exch, ins):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api_first)
     a_temp = c.date(exch, ins)
@@ -126,7 +126,7 @@ def get_ins_date(exch, ins):
 
     return ret
 
-def get_main_even_date(exch, ins):
+def _get_main_even_date(exch, ins):
     temp = re.split('([0-9]+)', ins)[0]
     ins_list = get_ins(exch, temp)
     month_compose = dominant.get_compose(exch, temp)
@@ -138,7 +138,7 @@ def get_main_even_date(exch, ins):
 
     temp_date = []
     for item in temp_ret:
-        date_list = get_ins_date(exch, item)
+        date_list = _get_ins_date(exch, item)
         month_list = month_compose[item[-2:]]
         ins_date = [item_date for item_date in date_list if item_date[4:6] in month_list and item_date[3]]
         temp_date = temp_date + ins_date
@@ -149,9 +149,9 @@ def get_main_even_date(exch, ins):
 
 def get_date(exch, ins):
     if '999' in ins:
-        return get_main_even_date(exch, ins)
+        return _get_main_even_date(exch, ins)
     else:
-        return get_ins_date(exch, ins)
+        return _get_ins_date(exch, ins)
 
 def get_ins(exch, special_type = ''):
     c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -166,3 +166,7 @@ def get_exch():
     temp = c.exch()
     c.close()
     return temp
+
+if __name__=="__main__":
+    ret = get_ins('CZCE', 'TA999_C')
+    print(ret)
