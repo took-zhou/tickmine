@@ -19,7 +19,7 @@ from tickmine.content.raw_tick import rawtick
 
 class K_line():
     def __init__(self):
-        self.period2file = {'1T':'m1', '5T':'m5', '10T':'m10', '15T':'m15', '30T':'m30', '60T':'m60', '1D':'d1'}
+        self.period2file = {'1T':'m1', '5T':'m5', '10T':'m10', '15T':'m15', '30T':'m30', '60T':'m60', '1D':'d1', '1W':'w1'}
 
     def _mkdir(self, path):
         if not os.path.exists(path):
@@ -92,11 +92,66 @@ class K_line():
 
         return ret
 
-    def _get_Ts_k_line(self, exch, ins, day_data, period='1T', subject='lastprice', save_path=''):
+    def _t_period_extension(self, exch, ins, day_date, save_path=''):
+        ret = pickle.loads(self.get(exch, ins, day_date, period='1T'))
+        if ret.size > 0:
+            _open = ret['Open'].resample('60T', closed = 'right', label='right').first()
+            _high = ret['High'].resample('60T', closed = 'right', label='right').max()
+            _low = ret['Low'].resample('60T', closed = 'right', label='right').min()
+            _close = ret['Close'].resample('60T', closed = 'right', label='right').last()
+            _volume = ret['Volume'].resample('60T', closed = 'right', label='right').sum()
+            _openinterest = ret['OpenInterest'].resample('60T', closed = 'right', label='right').sum()
+
+            ohlcv = pd.concat([_open, _high, _low, _close, _volume, _openinterest], axis=1).dropna()
+
+            if save_path != '':
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+
+                _path = '%s/%s_%s.csv' % (save_path, ins, day_date)
+                self._save(ohlcv, _path)
+
+            return ohlcv
+
+    def _d_period_extension(self, exch, ins, day_date, save_path=''):
+        # 判断是否是周五，周五才提取
+        ins_time_of_week = pd.to_datetime(day_date, format = '%Y-%m-%d').dayofweek + 1
+        if ins_time_of_week == 5:
+            date_list = pd.date_range(periods=5, end=day_date).strftime("%Y%m%d").tolist()
+            ndates_df = pd.DataFrame(columns = ["Open", "High", "Low", "Close", "Volume", "OpenInterest"])
+            ohlcv = pd.DataFrame({'Open':[], 'High':[],'Low':[],'Close':[],'Volume':[], 'OpenInterest':[]})
+            for item in date_list:
+                kline_data = pickle.loads(self.get(exch, ins, item, period = '1D', subject='lastprice'))
+                if len(kline_data) > 0:
+                    ndates_df = pd.concat([ndates_df, kline_data])
+
+            if len(ndates_df) > 0:
+                ndates_df = ndates_df.dropna()
+                ndates_df = ndates_df.sort_index()
+
+                ohlcv['Open'] = [ndates_df['Open'][0]]
+                ohlcv['High'] = [max(ndates_df['High'])]
+                ohlcv['Low'] = [min(ndates_df['Low'])]
+                ohlcv['Close'] = [ndates_df['Close'][-1]]
+                ohlcv['Volume'] = [sum(ndates_df['Volume'])]
+                ohlcv['OpenInterest'] = [ndates_df['OpenInterest'][-1]]
+                ohlcv.index = [ndates_df.index[-1].date()]
+                ohlcv.index.name = 'Timeindex'
+
+                if save_path != '':
+                    if not os.path.exists(save_path):
+                        os.makedirs(save_path)
+
+                    _path = '%s/%s_%s.csv' % (save_path, ins, day_date)
+                    self._save(ohlcv, _path)
+
+                return ohlcv
+
+    def _get_Ts_k_line(self, exch, ins, day_date, period='1T', subject='lastprice', save_path=''):
         if subject == 'tradepoint':
-            today_element_df = pickle.loads(tradepoint.get(exch, ins, day_data))
+            today_element_df = pickle.loads(tradepoint.get(exch, ins, day_date))
         else:
-            today_element_df = pickle.loads(rawtick.get(exch, ins, day_data))
+            today_element_df = pickle.loads(rawtick.get(exch, ins, day_date))
 
         if today_element_df.size > 0:
             if subject == 'tradepoint':
@@ -127,23 +182,23 @@ class K_line():
                 ohlcv = ohlcv.dropna()
                 ohlcv.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'}, inplace=True)
         else:
-            ohlcv = pd.DataFrame({'open':[], 'High':[],'Low':[],'Close':[],'Volume':[], 'OpenInterest':[]})
+            ohlcv = pd.DataFrame({'Open':[], 'High':[],'Low':[],'Close':[],'Volume':[], 'OpenInterest':[]})
             ohlcv.index.name = 'Timeindex'
 
         if save_path != '':
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
 
-            _path = '%s/%s_%s.csv' % (save_path, ins, day_data)
+            _path = '%s/%s_%s.csv' % (save_path, ins, day_date)
             self._save(ohlcv, _path)
 
         return ohlcv
 
-    def _get_1D_k_line(self, exch, ins, day_data, period='1D', subject='lastprice', save_path=''):
+    def _get_1D_k_line(self, exch, ins, day_date, period='1D', subject='lastprice', save_path=''):
         if subject == 'tradepoint':
-            today_element_df = pickle.loads(tradepoint.get(exch, ins, day_data))
+            today_element_df = pickle.loads(tradepoint.get(exch, ins, day_date))
         else:
-            today_element_df = pickle.loads(rawtick.get(exch, ins, day_data))
+            today_element_df = pickle.loads(rawtick.get(exch, ins, day_date))
 
         ohlcv = pd.DataFrame({'Open':[], 'High':[],'Low':[],'Close':[],'Volume':[], 'OpenInterest':[]})
 
@@ -171,7 +226,7 @@ class K_line():
             else:
                 del ohlcv['Volume']
                 del ohlcv['OpenInterest']
-            
+
             if exch == 'global':
                 ohlcv.index=[today_element_df.index[0].date()]
             else:
@@ -182,19 +237,19 @@ class K_line():
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
 
-            _path = '%s/%s_%s.csv' % (save_path, ins, day_data)
+            _path = '%s/%s_%s.csv' % (save_path, ins, day_date)
             self._save(ohlcv, _path)
 
         return ohlcv
 
-    def _get_pair_Ts_k_line(self, exch1, ins1, exch2, ins2, day_data, period, subject, save_path):
+    def _get_pair_Ts_k_line(self, exch1, ins1, exch2, ins2, day_date, period, subject, save_path):
         if subject == 'tradepoint':
-            today_element_df1 = pickle.loads(tradepoint.get(exch1, ins1, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
-            today_element_df2 = pickle.loads(tradepoint.get(exch2, ins2, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
+            today_element_df1 = pickle.loads(tradepoint.get(exch1, ins1, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
+            today_element_df2 = pickle.loads(tradepoint.get(exch2, ins2, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
             today_element_df = (today_element_df1['tradepoint'] - today_element_df2['tradepoint']).fillna(method='ffill').dropna()
         else:
-            today_element_df1 = pickle.loads(rawtick.get(exch1, ins1, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
-            today_element_df2 = pickle.loads(rawtick.get(exch2, ins2, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
+            today_element_df1 = pickle.loads(rawtick.get(exch1, ins1, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
+            today_element_df2 = pickle.loads(rawtick.get(exch2, ins2, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
             today_element_df = (today_element_df1['LastPrice'] - today_element_df2['LastPrice']).fillna(method='ffill').dropna()
 
         if today_element_df.size > 0:
@@ -205,26 +260,26 @@ class K_line():
 
             ohlc.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'}, inplace=True)
         else:
-            ohlc = pd.DataFrame({'open':[], 'High':[],'Low':[],'Close':[]})
+            ohlc = pd.DataFrame({'Open':[], 'High':[],'Low':[],'Close':[]})
             ohlc.index.name = 'Timeindex'
 
         if save_path != '':
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
 
-            _path = '%s/%s_%s_%s.csv' % (save_path, ins1, ins2, day_data)
+            _path = '%s/%s_%s_%s.csv' % (save_path, ins1, ins2, day_date)
             self._save(ohlc, _path)
 
         return ohlc
 
-    def _get_pair_1D_k_line(self, exch1, ins1, exch2, ins2, day_data, period, subject, save_path):
+    def _get_pair_1D_k_line(self, exch1, ins1, exch2, ins2, day_date, period, subject, save_path):
         if subject == 'tradepoint':
-            today_element_df1 = pickle.loads(tradepoint.get(exch1, ins1, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
-            today_element_df2 = pickle.loads(tradepoint.get(exch2, ins2, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
+            today_element_df1 = pickle.loads(tradepoint.get(exch1, ins1, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
+            today_element_df2 = pickle.loads(tradepoint.get(exch2, ins2, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["tradepoint"]))
             today_element_df = (today_element_df1['tradepoint'] - today_element_df2['tradepoint']).fillna(method='ffill').dropna()
         else:
-            today_element_df1 = pickle.loads(rawtick.get(exch1, ins1, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
-            today_element_df2 = pickle.loads(rawtick.get(exch2, ins2, day_data).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
+            today_element_df1 = pickle.loads(rawtick.get(exch1, ins1, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
+            today_element_df2 = pickle.loads(rawtick.get(exch2, ins2, day_date).resample('1T', label='right').last().dropna(axis=0, subset = ["LastPrice"]))
             today_element_df = (today_element_df1['LastPrice'] - today_element_df2['LastPrice']).fillna(method='ffill').dropna()
 
         if today_element_df.size > 0:
@@ -232,25 +287,25 @@ class K_line():
             ohlc.index = [today_element_df.index[-1].date()]
             ohlc.index.name = 'Timeindex'
         else:
-            ohlc = pd.DataFrame({'open':[], 'High':[],'Low':[],'Close':[]})
+            ohlc = pd.DataFrame({'Open':[], 'High':[],'Low':[],'Close':[]})
             ohlc.index.name = 'Timeindex'
 
         if save_path != '':
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
 
-            _path = '%s/%s_%s_%s.csv' % (save_path, ins1, ins2, day_data)
+            _path = '%s/%s_%s_%s.csv' % (save_path, ins1, ins2, day_date)
             self._save(ohlc, _path)
 
         return ohlc
 
-    def generate(self, exch, ins, day_data, period='1T', subject='lastprice', save_path=''):
+    def generate(self, exch, ins, day_date, period='1T', subject='lastprice', save_path=''):
         """ k 线生成
 
         Args:
             exch: 交易所简称
             ins: 合约代码
-            day_data: 日期
+            day_date: 日期
             period: K 线周期 例如 1T 5T 10T 15T 30T 60T 1D
             subject: lastprice 以最新价格提取k线；tradepoint 以可交易点提取k线
             save_path: 默认不保存数据，如果填写路径的话，会将k线数据以图片的形式保存下来
@@ -274,11 +329,11 @@ class K_line():
             2021-05-12 11:10:00  2820.0  2835.0  2820.0  2835.0   318.0
         """
         if 'T' in period:
-            return self._get_Ts_k_line(exch, ins, day_data, period, subject, save_path)
+            return self._get_Ts_k_line(exch, ins, day_date, period, subject, save_path)
         elif 'D' in period:
-            return self._get_1D_k_line(exch, ins, day_data, period, subject, save_path)
+            return self._get_1D_k_line(exch, ins, day_date, period, subject, save_path)
 
-    def generate_pair(self, exch1, ins1, exch2, ins2, day_data, period='1T', subject='lastprice', save_path=''):
+    def generate_pair(self, exch1, ins1, exch2, ins2, day_date, period='1T', subject='lastprice', save_path=''):
         """ 合约对 K线生成
 
         Args:
@@ -286,7 +341,7 @@ class K_line():
             ins1: 合约代码
             exch2: 交易所简称
             ins2: 合约代码
-            day_data: 日期
+            day_date: 日期
             period: K 线周期 例如 1T 5T 10T 15T 30T 60T 1D
             subject: lastprice 以最新价格提取k线；tradepoint 以可交易点提取k线
             save_path: 默认不保存数据，如果填写路径的话，会将k线数据以图片的形式保存下来
@@ -309,9 +364,9 @@ class K_line():
             2021-04-09 22:30:00 -729.0 -728.0 -732.0 -730.0
         """
         if 'T' in period:
-            return self._get_pair_Ts_k_line( exch1, ins1, exch2, ins2, day_data, period, subject, save_path)
+            return self._get_pair_Ts_k_line( exch1, ins1, exch2, ins2, day_date, period, subject, save_path)
         elif 'D' in period:
-            return self._get_pair_1D_k_line( exch1, ins1, exch2, ins2, day_data, period, subject, save_path)
+            return self._get_pair_1D_k_line( exch1, ins1, exch2, ins2, day_date, period, subject, save_path)
 
     def generate_all(self, keyword = '', inclde_option = 'no'):
         for exch in os.listdir(database_path):
@@ -323,21 +378,50 @@ class K_line():
                 for ins_data in os.listdir(ins_path):
                     ins_data_path = ins_path + "/" + ins_data
                     if keyword in ins_data_path:
-                        day_data = ins_data.split('.')[0].split('_')[-1]
-                        print('kline generate %s %s %s'%(exch, ins, day_data))
+                        day_date = ins_data.split('.')[0].split('_')[-1]
+                        print('kline generate %s %s %s'%(exch, ins, day_date))
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1T'], exch, ins)
-                        self.generate(exch, ins, day_data, '1T', subject='lastprice', save_path=dir_path)
+                        self.generate(exch, ins, day_date, '1T', subject='lastprice', save_path=dir_path)
                         dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1D'], exch, ins)
-                        self.generate(exch, ins, day_data, '1D', subject='lastprice', save_path=dir_path)
+                        self.generate(exch, ins, day_date, '1D', subject='lastprice', save_path=dir_path)
 
-    def get(self, exch, ins, day_data, time_slice=[], period = '1T', subject='lastprice'):
+    def multiperiod_extension(self):
+        m1_nature_path = '%s/%s/%s_kline'%(nature_path, 'lastprice', self.period2file['1T'])
+        for exch in os.listdir(m1_nature_path):
+            exch_path = m1_nature_path + "/" + exch
+            for ins in os.listdir(exch_path):
+                if len(ins) > 6:
+                    continue
+                ins_path = exch_path + "/" + ins
+                for ins_date in os.listdir(ins_path):
+                    # ins_data_path = ins_path + "/" + ins_date
+                    day_date = ins_date.split('.')[0].split('_')[-1]
+                    print('kline generate %s %s %s'%(exch, ins, day_date))
+                    dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['60T'], exch, ins)
+                    self._t_period_extension(exch, ins, day_date, save_path=dir_path)
+
+        d1_nature_path = '%s/%s/%s_kline'%(nature_path, 'lastprice', self.period2file['1D'])
+        for exch in os.listdir(d1_nature_path):
+            exch_path = d1_nature_path + "/" + exch
+            for ins in os.listdir(exch_path):
+                if len(ins) > 6:
+                    continue
+                ins_path = exch_path + "/" + ins
+                for ins_date in os.listdir(ins_path):
+                    # ins_data_path = ins_path + "/" + ins_date
+                    day_date = ins_date.split('.')[0].split('_')[-1]
+                    print('kline generate %s %s %s'%(exch, ins, day_date))
+                    dir_path = '%s/%s/%s_kline/%s/%s'%(nature_path, 'lastprice', self.period2file['1W'], exch, ins)
+                    self._d_period_extension(exch, ins, day_date, save_path=dir_path)
+
+    def get(self, exch, ins, day_date, time_slice=[], period = '1T', subject='lastprice'):
         """ 获取特定时间范围内的k线构成的word数据
 
         Args:
             exch: 交易所简称
             ins: 合约代码
             period: 提取数据的周期，默认是一分钟周期
-            day_data: 时间list集合
+            day_date: 时间list集合
         Returns:
             返回的数据格式是 dataframe 格式，包含word信息
 
@@ -350,7 +434,7 @@ class K_line():
             2018-08-03  3089.0  3200.0  3077.0  3200.0  466340      370216.0
         """
         root_path = '%s/%s/%s_kline/%s/%s'%(nature_path, subject, self.period2file[period], exch, ins)
-        want_file_list = os.path.join(root_path, '%s_%s.csv'%(ins, day_data))
+        want_file_list = os.path.join(root_path, '%s_%s.csv'%(ins, day_date))
         file_data = pd.DataFrame(columns = ["Timeindex", "Open", "High", "Low", "Close", "Volume", "OpenInterest"])
 
         try:
@@ -361,9 +445,9 @@ class K_line():
 
             if len(time_slice) == 2:
                 if os.environ.get('database') == 'sina':
-                    _time_slice = self._get_time_slice_sina(day_data, time_slice)
+                    _time_slice = self._get_time_slice_sina(day_date, time_slice)
                 else:
-                    _time_slice = self._get_time_slice(day_data, time_slice)
+                    _time_slice = self._get_time_slice(day_date, time_slice)
                 file_data = file_data.truncate(before = _time_slice[0], after = _time_slice[1])
         except:
             pass
@@ -374,7 +458,10 @@ kline = K_line()
 
 if __name__=="__main__":
     if len(sys.argv) == 2:
-        kdata = kline.generate_all(sys.argv[1])
+        if 'extension' == sys.argv[1]:
+            kline.multiperiod_extension()
+        else:
+            kdata = kline.generate_all(sys.argv[1])
     elif len(sys.argv) == 3:
         kdata = kline.generate_all(sys.argv[1], sys.argv[2])
     else:
