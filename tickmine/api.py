@@ -13,9 +13,9 @@ client_api_second = 'tcp://192.168.0.102:8101'
 client_api_third = 'tcp://192.168.0.102:8150'
 
 # debug模式
-client_api_first = 'tcp://192.168.0.102:8110'
-client_api_second = 'tcp://192.168.0.102:8120'
-client_api_third = 'tcp://192.168.0.102:8130'
+# client_api_first = 'tcp://192.168.0.102:8110'
+# client_api_second = 'tcp://192.168.0.102:8120'
+# client_api_third = 'tcp://192.168.0.102:8130'
 
 client_api_fourth = 'tcp://192.168.0.106:8150'
 
@@ -272,22 +272,8 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_rawtick('CZCE', 'TA709', '20170420')
+    ret = get_date('CZCE', 'TA301')
     end = time.time()
     runTime = end - start
     print("run time: ", runTime)
     print(ret)
-
-    start = time.time()
-    ret = get_kline('CZCE', 'TA709', '20170420', period='1D')
-    end = time.time()
-    runTime = end - start
-    print("run time: ", runTime)
-    print(ret)
-
-    # start = time.time()
-    # ret = get_date('CZCE', 'TA209')
-    # end = time.time()
-    # runTime = end - start
-    # print("run time: ", runTime)
-    # print(ret)
