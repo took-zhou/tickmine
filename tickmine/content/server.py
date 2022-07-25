@@ -25,8 +25,8 @@ class remote(object):
     def date(self, exch, ins):
         return info.get_date(exch, ins)
 
-    def ins(self, exch, special_type=''):
-        return info.get_instrument(exch, special_type)
+    def ins(self, exch, special_type='', special_date=''):
+        return info.get_instrument(exch, special_type, special_date)
 
     def exch(self):
         return info.get_exchange()

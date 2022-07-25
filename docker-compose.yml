@@ -1,19 +1,19 @@
 version: "3"
 services:
 
-  # tsaodai1:
-  #   restart: always
-  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-  #   environment:
-  #     - run_mode=debug
-  #     - database=tsaodai
-  #   volumes:
-  #     - /home/zhoufan/code/quantation:/share/quantation
-  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-  #   ports:
-  #     - "8120:11332"
-  #   tty: true
-  #   stdin_open: true
+  tsaodai1:
+    restart: always
+    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+    environment:
+      - run_mode=debug
+      - database=tsaodai
+    volumes:
+      - /home/zhoufan/code/quantation:/share/quantation
+      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+    ports:
+      - "8120:11332"
+    tty: true
+    stdin_open: true
 
   tsaodai2:
     restart: always
@@ -80,19 +80,19 @@ services:
     tty: true
     stdin_open: true
 
-  # citic1:
-  #   restart: always
-  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-  #   environment:
-  #     - run_mode=debug
-  #     - database=citic
-  #   volumes:
-  #     - /home/zhoufan/code/quantation:/share/quantation
-  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-  #   ports:
-  #     - "8110:11332"
-  #   tty: true
-  #   stdin_open: true
+  citic1:
+    restart: always
+    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+    environment:
+      - run_mode=debug
+      - database=citic
+    volumes:
+      - /home/zhoufan/code/quantation:/share/quantation
+      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+    ports:
+      - "8110:11332"
+    tty: true
+    stdin_open: true
 
   citic2:
     restart: always
@@ -173,67 +173,67 @@ services:
   #   tty: true
   #   stdin_open: true
 
-  sina2:
-    restart: always
-    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-    environment:
-      - run_mode=release
-      - database=sina
-    volumes:
-      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-    ports:
-      - "8131:11332"
-    tty: true
-    stdin_open: true
+  # sina2:
+  #   restart: always
+  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+  #   environment:
+  #     - run_mode=release
+  #     - database=sina
+  #   volumes:
+  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+  #   ports:
+  #     - "8131:11332"
+  #   tty: true
+  #   stdin_open: true
 
-  sina3:
-    restart: always
-    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-    environment:
-      - run_mode=release
-      - database=sina
-    volumes:
-      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-    ports:
-      - "8132:11332"
-    tty: true
-    stdin_open: true
+  # sina3:
+  #   restart: always
+  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+  #   environment:
+  #     - run_mode=release
+  #     - database=sina
+  #   volumes:
+  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+  #   ports:
+  #     - "8132:11332"
+  #   tty: true
+  #   stdin_open: true
 
-  sina4:
-    restart: always
-    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-    environment:
-      - run_mode=release
-      - database=sina
-    volumes:
-      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-    ports:
-      - "8133:11332"
-    tty: true
-    stdin_open: true
+  # sina4:
+  #   restart: always
+  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+  #   environment:
+  #     - run_mode=release
+  #     - database=sina
+  #   volumes:
+  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+  #   ports:
+  #     - "8133:11332"
+  #   tty: true
+  #   stdin_open: true
 
-  sina5:
-    restart: always
-    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-    environment:
-      - run_mode=release
-      - database=sina
-    volumes:
-      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-    ports:
-      - "8134:11332"
-    tty: true
-    stdin_open: true
+  # sina5:
+  #   restart: always
+  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+  #   environment:
+  #     - run_mode=release
+  #     - database=sina
+  #   volumes:
+  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+  #   ports:
+  #     - "8134:11332"
+  #   tty: true
+  #   stdin_open: true
 
-  sina6:
-    restart: always
-    image: "192.168.0.102:8098/tsaodai/tickmine:latest"
-    environment:
-      - run_mode=release
-      - database=sina
-    volumes:
-      - /home/zhoufan/baidunetdisk:/share/baidunetdisk
-    ports:
-      - "8135:11332"
-    tty: true
-    stdin_open: true
+  # sina6:
+  #   restart: always
+  #   image: "192.168.0.102:8098/tsaodai/tickmine:latest"
+  #   environment:
+  #     - run_mode=release
+  #     - database=sina
+  #   volumes:
+  #     - /home/zhoufan/baidunetdisk:/share/baidunetdisk
+  #   ports:
+  #     - "8135:11332"
+  #   tty: true
+  #   stdin_open: true

@@ -5,13 +5,8 @@ import tarfile
 
 from tickmine.structure import util
 
-instrument_case_match = {
-    'CZCE': 'up',
-    'DCE': 'low',
-    'SHFE': 'low',
-    'INE': 'low',
-    'CFFEX': 'up'
-}
+instrument_case_match = {'CZCE': 'up', 'DCE': 'low', 'SHFE': 'low', 'INE': 'low', 'CFFEX': 'up'}
+
 
 def untar(fname, dirs):
     """
@@ -22,13 +17,14 @@ def untar(fname, dirs):
     """
     try:
         t = tarfile.open(fname)
-        t.extractall(path = dirs)
+        t.extractall(path=dirs)
         return True
     except Exception as e:
         print(e)
         return False
 
-def buildTargetFileName(oldFile:str, newDir:str, fileName:str,exchangeDir:str, isNight:bool):
+
+def buildTargetFileName(oldFile: str, newDir: str, fileName: str, exchangeDir: str, isNight: bool):
     groups = oldFile.split("_")
     timeStr = groups[2].split(".")[0]
     splitedTime = timeStr.split("-")
@@ -39,13 +35,15 @@ def buildTargetFileName(oldFile:str, newDir:str, fileName:str,exchangeDir:str, i
     else:
         instrumentId = fileName.split(".")[0].lower()
 
+    yearstr = util.get_year(exchangeDir, instrumentId)
     if isNight == False:
-        return newDir + "/" + exchangeDir+"/"+ exchangeDir+"/"+instrumentId +"/"+instrumentId+"_"+timeStr+".csv"
-    return newDir + "/" + exchangeDir + "/" + exchangeDir+"_night" + "/" + instrumentId + "/" + instrumentId + "_" + timeStr + ".csv"
+        return newDir + "/" + yearstr + "/" + exchangeDir + "/" + exchangeDir + "/" + instrumentId + "/" + instrumentId + "_" + timeStr + ".csv"
+    return newDir + "/" + yearstr + "/" + exchangeDir + "/" + exchangeDir + "_night" + "/" + instrumentId + "/" + instrumentId + "_" + timeStr + ".csv"
+
 
 def initRecordInfo(dataRootPath, recordFileName):
     tmpPath = dataRootPath + "/" + recordFileName
-    if(not os.path.exists(tmpPath)):
+    if (not os.path.exists(tmpPath)):
         util.create_file_linux(tmpPath)
     f_record = open(tmpPath, "r")
     f_record.seek(0, 0)
@@ -53,11 +51,12 @@ def initRecordInfo(dataRootPath, recordFileName):
     try:
         tmpRecord = json.load(f_record)
     except:
-        print(tmpPath+" init, no records")
+        print(tmpPath + " init, no records")
     f_record.close()
     if "SaveFiles" in tmpRecord.keys():
         return True, tmpRecord["SaveFiles"]
     return False, []
+
 
 def updateRecordInfo(dataRootPath, recordFileName, comPresFile):
     tmpPath = dataRootPath + "/" + recordFileName
@@ -65,23 +64,24 @@ def updateRecordInfo(dataRootPath, recordFileName, comPresFile):
     rawContent = {}
     with open(tmpPath, "r") as fr:
         try:
-            rawContent =  json.load(fr)
+            rawContent = json.load(fr)
         except:
-            print(tmpPath+" init, no records to read")
+            print(tmpPath + " init, no records to read")
     content = []
     if "SaveFiles" in rawContent.keys():
         content = rawContent["SaveFiles"]
     content.append(comPresFile)
     f_record = open(tmpPath, "w")
     f_record.seek(0, 0)
-    content = {"SaveFiles":content}
-    json.dump(content,f_record, indent=4)
+    content = {"SaveFiles": content}
+    json.dump(content, f_record, indent=4)
     f_record.close()
 
-def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight:bool=False):
+
+def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight: bool = False):
     if (not os.path.exists(newDataRootPath)):
         os.makedirs(newDataRootPath)
-    result,records = initRecordInfo(dataRootPath, recordFileName)
+    result, records = initRecordInfo(dataRootPath, recordFileName)
     if not result:
         records = []
     records = set(records)
@@ -92,15 +92,15 @@ def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight:bool=Fals
             continue
         print(comPresFile)
         compressFile = dataRootPath + "/" + comPresFile
-        tmp_uncompress_dir = newDataRootPath+"/"+"tmp"
+        tmp_uncompress_dir = newDataRootPath + "/" + "tmp"
         if (not os.path.exists(tmp_uncompress_dir)):
             os.makedirs(tmp_uncompress_dir)
-        untar(compressFile,tmp_uncompress_dir)
+        untar(compressFile, tmp_uncompress_dir)
         for exchangeDir in os.listdir(tmp_uncompress_dir):
             tmpExchangeDir = tmp_uncompress_dir + "/" + exchangeDir
             for file in os.listdir(tmpExchangeDir):
                 sourceFile = tmpExchangeDir + "/" + file
-                targetFileName =buildTargetFileName(comPresFile,newDataRootPath,file,exchangeDir, isNight)
+                targetFileName = buildTargetFileName(comPresFile, newDataRootPath, file, exchangeDir, isNight)
                 destDir = targetFileName[0:targetFileName.rfind("/")]
                 if (not os.path.exists(destDir)):
                     os.makedirs(destDir)
@@ -111,13 +111,15 @@ def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight:bool=Fals
 
     print("reconstruct ok!")
 
+
 def main():
     from tickmine.global_config import tsaodai_dst_path, tsaodai_src_path
 
     recordFileName = "record.json"
 
-    reconstruct("%s/day"%(tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=False)
-    reconstruct("%s/night"%(tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=True)
+    reconstruct("%s/day" % (tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=False)
+    reconstruct("%s/night" % (tsaodai_src_path), tsaodai_dst_path, recordFileName, isNight=True)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

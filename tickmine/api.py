@@ -1,3 +1,4 @@
+#coding=utf-8
 import datetime
 import re
 
@@ -207,18 +208,8 @@ def get_mline(exch, ins, day_date):
 def _get_ins_date(exch, ins):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api_first)
-    a_temp = c.date(exch, ins)
+    ret = c.date(exch, ins)
     c.close()
-
-    c = zerorpc.Client(timeout=300, heartbeat=None)
-    c.connect(client_api_second)
-    b_temp = c.date(exch, ins)
-    c.close()
-
-    if a_temp[-1] in b_temp:
-        ret = a_temp + b_temp[b_temp.index(a_temp[-1]) + 1:]
-    else:
-        ret = a_temp
 
     return ret
 
@@ -252,11 +243,12 @@ def get_date(exch, ins):
         return _get_ins_date(exch, ins)
 
 
-def get_ins(exch, special_type=''):
+def get_ins(exch, special_type='', special_date=''):
     c = zerorpc.Client(timeout=300, heartbeat=None)
     c.connect(client_api_first)
-    temp = c.ins(exch, special_type)
+    temp = c.ins(exch, special_type, special_date)
     c.close()
+
     return temp
 
 
@@ -272,7 +264,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_date('CZCE', 'TA301')
+    ret = get_date('CFFEX', 'IF999')
     end = time.time()
     runTime = end - start
     print("run time: ", runTime)

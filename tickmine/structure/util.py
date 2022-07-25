@@ -1,7 +1,10 @@
-import zipfile
 import os
+import re
 import shutil
+import zipfile
+
 import rarfile
+
 
 def unzip_single(src_file, dest_dir, password):
     ''' 解压单个文件到目标文件夹。
@@ -15,6 +18,7 @@ def unzip_single(src_file, dest_dir, password):
         print(e)
     zf.close()
 
+
 def unrar_single(src_file, dest_dir, password):
     ''' 解压单个文件到目标文件夹。
     '''
@@ -23,9 +27,10 @@ def unrar_single(src_file, dest_dir, password):
     zf = rarfile.RarFile(src_file)
     try:
         zf.extractall(dest_dir)
-    except RuntimeError as e: 
+    except RuntimeError as e:
         print(e)
     zf.close()
+
 
 def delDir(top):
     for root, dirs, files in os.walk(top, topdown=False):
@@ -35,22 +40,27 @@ def delDir(top):
             os.rmdir(os.path.join(root, name))
     os.removedirs(top)
 
+
 def delDirTree(top):
     shutil.rmtree(top)
+
 
 def getDestDirByCompressName(CompressFileName):
     splitedItem = CompressFileName.split(".")
     if len(splitedItem) != 2:
         print("compressFileName split error, length is [{}]".format(len(splitedItem)))
-        return False,"",""
+        return False, "", ""
     else:
         return True, splitedItem[-2], splitedItem[-1]
 
+
 def moveFile(fileName, destDir):
-    shutil.move(fileName,destDir)
+    shutil.move(fileName, destDir)
+
 
 def copyFile(fileName, destFileName):
-    shutil.copyfile(fileName,destFileName)
+    shutil.copyfile(fileName, destFileName)
+
 
 def create_file_linux(filename):
     path = filename[0:filename.rfind("/")]
@@ -62,6 +72,7 @@ def create_file_linux(filename):
     else:
         pass
 
+
 def create_file_windows(filename):
     path = filename[0:filename.rfind("\\")]
     if not os.path.isdir(path):  # 无文件夹时创建
@@ -69,12 +80,13 @@ def create_file_windows(filename):
     if not os.path.isfile(filename):  # 无文件时创建
         fd = open(filename, mode="w", encoding="utf-8")
         fd.close()
-        print(filename," create ok!")
+        print(filename, " create ok!")
     else:
-        print(filename," has exist!")
+        print(filename, " has exist!")
 
-def isFileInFileList(file,fileSet:set):
-#     tmpFileList = fileList.copy()
+
+def isFileInFileList(file, fileSet: set):
+    #     tmpFileList = fileList.copy()
     if len(fileSet) == 0:
         return False
     length1 = len(fileSet)
@@ -84,5 +96,23 @@ def isFileInFileList(file,fileSet:set):
         return False
     return True
 
-if __name__=="__main__":
+
+def get_year(exch, ins):
+    name_split = re.split('([0-9]+)', ins)
+    yearstr = ''
+    if len(name_split) >= 3:
+        _year_ = name_split[1]
+
+        if 'CZCE' == exch:
+            if int(_year_[0:1]) > 4:
+                yearstr = '201%s' % _year_[0:1]
+            else:
+                yearstr = '202%s' % _year_[0:1]
+        else:
+            yearstr = '20%s' % _year_[0:2]
+
+    return yearstr
+
+
+if __name__ == "__main__":
     unrar_single('/share/baidunetdisk/citic/citic_ticks/DCE/DCE/2015/DCE_201510.rar', '.', None)

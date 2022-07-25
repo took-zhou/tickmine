@@ -2,6 +2,7 @@ import datetime
 import gzip
 import math
 import os
+import re
 import sys
 
 import _pickle as cPickle
@@ -205,19 +206,37 @@ class Level1():
         return ask_bid_df
 
     def generate_all(self, keyword='', inclde_option='no'):
-        for exch in os.listdir(database_path):
-            exch_day_path = database_path + "/" + exch + "/" + exch
-            for ins in os.listdir(exch_day_path):
-                if inclde_option == 'no' and len(ins) > 6:
-                    continue
-                ins_path = exch_day_path + "/" + ins
-                for ins_data in os.listdir(ins_path):
-                    ins_data_path = ins_path + "/" + ins_data
-                    if keyword in ins_data_path:
-                        dir_path = '%s/tradepoint/askbidpair/%s/%s' % (nature_path, exch, ins)
-                        day_date = ins_data.split('.')[0].split('_')[-1]
-                        print('level1 generate %s %s %s' % (exch, ins, day_date))
-                        self.generate(exch, ins, day_date, save_path=dir_path)
+        for year in os.listdir(database_path):
+            year_exch_day_path = database_path + "/" + year
+            for exch in os.listdir(year_exch_day_path):
+                exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
+                for ins in os.listdir(exch_day_path):
+                    if inclde_option == 'no' and len(ins) > 6:
+                        continue
+                    ins_path = exch_day_path + "/" + ins
+                    for ins_data in os.listdir(ins_path):
+                        ins_data_path = ins_path + "/" + ins_data
+                        if keyword in ins_data_path:
+                            dir_path = '%s/tradepoint/%s/askbidpair/%s/%s' % (nature_path, year, exch, ins)
+                            day_date = ins_data.split('.')[0].split('_')[-1]
+                            print('level1 generate %s %s %s' % (exch, ins, day_date))
+                            self.generate(exch, ins, day_date, save_path=dir_path)
+
+    def _get_year(self, exch, ins):
+        name_split = re.split('([0-9]+)', ins)
+        yearstr = ''
+        if len(name_split) >= 3:
+            _year_ = name_split[1]
+
+            if 'CZCE' == exch:
+                if int(_year_[0:1]) > 4:
+                    yearstr = '201%s' % _year_[0:1]
+                else:
+                    yearstr = '202%s' % _year_[0:1]
+            else:
+                yearstr = '20%s' % _year_[0:2]
+
+        return yearstr
 
     def get(self, exch, ins, day_date):
         """ 获取特定时间范围内的k线构成的word数据
@@ -241,13 +260,14 @@ class Level1():
             2021-11-29 21:00:02     2670.0         210     2671.0         174
             ...
         """
-        want_file = '%s/tradepoint/askbidpair/%s/%s/%s_%s.pkl' % (nature_path, exch, ins, ins, day_date)
+        yearstr = self._get_year(exch, ins)
+        want_file = '%s/tradepoint/%s/askbidpair/%s/%s/%s_%s.pkl' % (nature_path, yearstr, exch, ins, ins, day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:
                 return file_object.read()
         except:
-            element_df = pd.DataFrame(columns=['BidPrice1','BidVolume1','AskPrice1','AskVolume1'])
+            element_df = pd.DataFrame(columns=['BidPrice1', 'BidVolume1', 'AskPrice1', 'AskVolume1'])
             serialized = cPickle.dumps(element_df)
             return serialized
 

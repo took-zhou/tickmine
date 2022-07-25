@@ -1,6 +1,7 @@
 import datetime
 import gzip
 import os
+import re
 import sys
 
 import _pickle as cPickle
@@ -396,21 +397,23 @@ class K_line():
             return self._get_pair_1D_k_line(exch1, ins1, exch2, ins2, day_date, period, save_path)
 
     def generate_all(self, keyword='', inclde_option='no'):
-        for exch in os.listdir(database_path):
-            exch_day_path = database_path + "/" + exch + "/" + exch
-            for ins in os.listdir(exch_day_path):
-                if inclde_option == 'no' and len(ins) > 6:
-                    continue
-                ins_path = exch_day_path + "/" + ins
-                for ins_data in os.listdir(ins_path):
-                    ins_data_path = ins_path + "/" + ins_data
-                    if keyword in ins_data_path:
-                        day_date = ins_data.split('.')[0].split('_')[-1]
-                        print('kline generate %s %s %s' % (exch, ins, day_date))
-                        dir_path = '%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', self.period2file['1T'], exch, ins)
-                        self.generate(exch, ins, day_date, '1T', save_path=dir_path)
-                        dir_path = '%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', self.period2file['1D'], exch, ins)
-                        self.generate(exch, ins, day_date, '1D', save_path=dir_path)
+        for year in os.listdir(database_path):
+            year_exch_day_path = database_path + "/" + year
+            for exch in os.listdir(year_exch_day_path):
+                exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
+                for ins in os.listdir(exch_day_path):
+                    if inclde_option == 'no' and len(ins) > 6:
+                        continue
+                    ins_path = exch_day_path + "/" + ins
+                    for ins_data in os.listdir(ins_path):
+                        ins_data_path = ins_path + "/" + ins_data
+                        if keyword in ins_data_path:
+                            day_date = ins_data.split('.')[0].split('_')[-1]
+                            print('kline generate %s %s %s' % (exch, ins, day_date))
+                            dir_path = '%s/%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', year, self.period2file['1T'], exch, ins)
+                            self.generate(exch, ins, day_date, '1T', save_path=dir_path)
+                            dir_path = '%s/%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', year, self.period2file['1D'], exch, ins)
+                            self.generate(exch, ins, day_date, '1D', save_path=dir_path)
 
     def multiperiod_extension(self):
         m1_nature_path = '%s/%s/%s_kline' % (nature_path, 'lastprice', self.period2file['1T'])
@@ -441,6 +444,22 @@ class K_line():
                     dir_path = '%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', self.period2file['1W'], exch, ins)
                     self._d_period_extension(exch, ins, day_date, save_path=dir_path)
 
+    def _get_year(self, exch, ins):
+        name_split = re.split('([0-9]+)', ins)
+        yearstr = ''
+        if len(name_split) >= 3:
+            _year_ = name_split[1]
+
+            if 'CZCE' == exch:
+                if int(_year_[0:1]) > 4:
+                    yearstr = '201%s' % _year_[0:1]
+                else:
+                    yearstr = '202%s' % _year_[0:1]
+            else:
+                yearstr = '20%s' % _year_[0:2]
+
+        return yearstr
+
     def get(self, exch, ins, day_date, period='1T'):
         """ 获取特定时间范围内的k线构成的word数据
 
@@ -460,7 +479,8 @@ class K_line():
             2018-08-02  3015.0  3096.0  3010.0  3093.0  292132      320158.0
             2018-08-03  3089.0  3200.0  3077.0  3200.0  466340      370216.0
         """
-        want_file = '%s/lastprice/%s_kline/%s/%s/%s_%s.pkl' % (nature_path, self.period2file[period], exch, ins, ins, day_date)
+        yearstr = self._get_year(exch, ins)
+        want_file = '%s/lastprice/%s/%s_kline/%s/%s/%s_%s.pkl' % (nature_path, yearstr, self.period2file[period], exch, ins, ins, day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:

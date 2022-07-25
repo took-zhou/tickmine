@@ -2,6 +2,9 @@ citic_src_path = '/share/baidunetdisk/citic/citic_ticks'
 citic_dst_path = '/share/baidunetdisk/citic/reconstruct/tick'
 citic_nature_path = '/share/baidunetdisk/citic/naturedata'
 
+citic2_dst_path = '/share/baidunetdisk/citic2/reconstruct/tick'
+citic2_nature_path = '/share/baidunetdisk/citic2/naturedata'
+
 tsaodai_src_path = '/share/baidunetdisk/tsaodai/tsaodai_ticks'
 tsaodai_dst_path = '/share/baidunetdisk/tsaodai/reconstruct/tick'
 tsaodai_nature_path = '/share/baidunetdisk/tsaodai/naturedata'

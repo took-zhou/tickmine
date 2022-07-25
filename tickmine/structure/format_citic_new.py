@@ -1,44 +1,42 @@
 import os
 import sys
 
+from tickmine.global_config import citic_dst_path, citic_src_path
 from tickmine.structure import util
-from tickmine.global_config import citic_dst_path
-from tickmine.global_config import citic_src_path
 
-instrument_case_match = {
-    'CZCE': 'up',
-    'DCE': 'low',
-    'SHFE': 'low',
-    'INE': 'low',
-    'CFFEX': 'up'
-}
+instrument_case_match = {'CZCE': 'up', 'DCE': 'low', 'SHFE': 'low', 'INE': 'low', 'CFFEX': 'up'}
 
-def buildTargetFileName(yearMonData:str, newDir:str, fileName:str,exchangeDir:str,isNight:bool):
+
+def buildTargetFileName(yearMonData: str, newDir: str, fileName: str, exchangeDir: str, isNight: bool):
     temp_file_path = ''
     if instrument_case_match[exchangeDir] == 'up':
         instrumentId = fileName.split(".")[0].upper()
     else:
         instrumentId = fileName.split(".")[0].lower()
+
+    yearstr = util.get_year(exchangeDir, instrumentId)
     if isNight == False:
-        temp_file_path = newDir + "/" + exchangeDir+"/"+ exchangeDir+"/"+instrumentId +"/"+instrumentId+"_"+yearMonData+".csv"
+        temp_file_path = newDir + "/" + yearstr + "/" + exchangeDir + "/" + exchangeDir + "/" + instrumentId + "/" + instrumentId + "_" + yearMonData + ".csv"
     else:
-        temp_file_path = newDir + "/" + exchangeDir + "/" + exchangeDir+"_night" + "/" + instrumentId + "/" + instrumentId + "_" + yearMonData + ".csv"
+        temp_file_path = newDir + "/" + yearstr + "/" + exchangeDir + "/" + exchangeDir + "_night" + "/" + instrumentId + "/" + instrumentId + "_" + yearMonData + ".csv"
 
     return temp_file_path
 
-def buildAbsoluteDir(root:str, subDir:dir):
-    return root+"/"+subDir
 
-def dealExtractFiles(tmpComFile:str, exchangeDir:str,isNight:bool):
-    tmpStorageDir = citic_dst_path + "/" +"tmpStorge"
+def buildAbsoluteDir(root: str, subDir: dir):
+    return root + "/" + subDir
+
+
+def dealExtractFiles(tmpComFile: str, exchangeDir: str, isNight: bool):
+    tmpStorageDir = citic_dst_path + "/" + "tmpStorge"
     if (not os.path.exists(tmpStorageDir)):
         os.makedirs(tmpStorageDir)
 
-    ok,dest_dir,suffix = util.getDestDirByCompressName(tmpComFile)
+    ok, dest_dir, suffix = util.getDestDirByCompressName(tmpComFile)
     if not ok:
         return
 
-    if suffix == "zip" :
+    if suffix == "zip":
         util.unzip_single(tmpComFile, tmpStorageDir, None)
     elif suffix == "rar":
         util.unrar_single(tmpComFile, tmpStorageDir, None)
@@ -57,7 +55,7 @@ def dealExtractFiles(tmpComFile:str, exchangeDir:str,isNight:bool):
                 # print("fileName",fileName)
                 instrumentFile = buildAbsoluteDir(tmpLetterDir, fileName)
                 # print("instrumentFile:",instrumentFile)
-                targetFileName = buildTargetFileName(yearMonDataDir,citic_dst_path,fileName,exchangeDir,isNight)
+                targetFileName = buildTargetFileName(yearMonDataDir, citic_dst_path, fileName, exchangeDir, isNight)
                 # print("targetFileName:",targetFileName)
                 destDir = targetFileName[0:targetFileName.rfind("/")]
                 if (not os.path.exists(destDir)):
@@ -68,11 +66,13 @@ def dealExtractFiles(tmpComFile:str, exchangeDir:str,isNight:bool):
 
     util.delDir(tmpStorageDir)
 
-def isNightDir(subExchangeDir:str):
+
+def isNightDir(subExchangeDir: str):
     strGroup = subExchangeDir.split("_")
     if strGroup[-1] == "night":
         return True
     return False
+
 
 def fixHeadError(targetFilePath):
     # 解决文本第一行出现\\r\\n但是没有换行
@@ -87,10 +87,10 @@ def fixHeadError(targetFilePath):
                 row_index = row_index + 1
                 if row_index == 1:
                     if line[206:210] == b'\\r\\n':
-                        print('find %s head length %d is error'%(targetFilePath, len(line)))
+                        print('find %s head length %d is error' % (targetFilePath, len(line)))
                         find_flag = True
                     else:
-                        print('file %s head length %d is ok'%(targetFilePath, len(line)))
+                        print('file %s head length %d is ok' % (targetFilePath, len(line)))
                         break
                 lines.append(line)
             else:
@@ -106,6 +106,7 @@ def fixHeadError(targetFilePath):
             with open(targetFilePath, 'wb') as f:
                 f.writelines(lines)
                 f.close()
+
 
 def fixLastContainsCommasAndDoubleContextError(targetFilePath):
     # 解决文本最后一行包含逗号错误 文本重复两次错误
@@ -142,10 +143,11 @@ def fixLastContainsCommasAndDoubleContextError(targetFilePath):
         f.close()
 
     if find_flag == True:
-        print('find %s last contains commas or double context error'%(targetFilePath))
+        print('find %s last contains commas or double context error' % (targetFilePath))
         with open(targetFilePath, 'wb') as f:
             f.writelines(lines)
             f.close()
+
 
 def main(_time):
     for exchangeDir in os.listdir(citic_src_path):
@@ -169,8 +171,9 @@ def main(_time):
                     for comFile in need_compressFiles:
                         tmpComFile = tempMonthDir + "/" + comFile
                         print(f"begin deal with {tmpComFile}")
-                        dealExtractFiles(tmpComFile,exchangeDir,isNight)
+                        dealExtractFiles(tmpComFile, exchangeDir, isNight)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     if len(sys.argv) == 2:
         main(sys.argv[1])

@@ -5,6 +5,11 @@ import pytest
 from tickmine.api import *
 
 
+def test_api_address():
+    assert(client_api_first != 'tcp://192.168.0.102:8110')
+    assert(client_api_second != 'tcp://192.168.0.102:8120')
+    assert(client_api_third != 'tcp://192.168.0.102:8130')
+
 def test_exch():
     ret_exch = get_exch()
     assert (len(ret_exch) == 8)

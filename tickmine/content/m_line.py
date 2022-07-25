@@ -1,5 +1,6 @@
 import gzip
 import os
+import re
 import sys
 
 import _pickle as cPickle
@@ -57,7 +58,7 @@ class M_line():
             ma_df['MA20'] = [np.mean(ndates_df.Close[-20:])]
             ma_df['MA30'] = [np.mean(ndates_df.Close[-30:])]
             ma_df.index = [ndates_df.index[-1]]
-            
+
             ma_df.index.name = 'Timeindex'
 
         if save_path != '':
@@ -76,19 +77,37 @@ class M_line():
         return ma_df
 
     def generate_all(self, keyword='', inclde_option='no'):
-        for exch in os.listdir(database_path):
-            exch_day_path = database_path + "/" + exch + "/" + exch
-            for ins in os.listdir(exch_day_path):
-                if inclde_option == 'no' and len(ins) > 6:
-                    continue
-                ins_path = exch_day_path + "/" + ins
-                for ins_data in os.listdir(ins_path):
-                    ins_data_path = ins_path + "/" + ins_data
-                    if keyword in ins_data_path:
-                        day_date = ins_data.split('.')[0].split('_')[-1]
-                        print('mline generate %s %s %s' % (exch, ins, day_date))
-                        dir_path = '%s/%s/ma_line/%s/%s' % (nature_path, 'lastprice', exch, ins)
-                        self.generate(exch, ins, day_date, save_path=dir_path)
+        for year in os.listdir(database_path):
+            year_exch_day_path = database_path + "/" + year
+            for exch in os.listdir(year_exch_day_path):
+                exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
+                for ins in os.listdir(exch_day_path):
+                    if inclde_option == 'no' and len(ins) > 6:
+                        continue
+                    ins_path = exch_day_path + "/" + ins
+                    for ins_data in os.listdir(ins_path):
+                        ins_data_path = ins_path + "/" + ins_data
+                        if keyword in ins_data_path:
+                            day_date = ins_data.split('.')[0].split('_')[-1]
+                            print('mline generate %s %s %s' % (exch, ins, day_date))
+                            dir_path = '%s/%s/%s/ma_line/%s/%s' % (nature_path, 'lastprice', year, exch, ins)
+                            self.generate(exch, ins, day_date, save_path=dir_path)
+
+    def _get_year(self, exch, ins):
+        name_split = re.split('([0-9]+)', ins)
+        yearstr = ''
+        if len(name_split) >= 3:
+            _year_ = name_split[1]
+
+            if 'CZCE' == exch:
+                if int(_year_[0:1]) > 4:
+                    yearstr = '201%s' % _year_[0:1]
+                else:
+                    yearstr = '202%s' % _year_[0:1]
+            else:
+                yearstr = '20%s' % _year_[0:2]
+
+        return yearstr
 
     def get(self, exch, ins, day_date):
         """ 获取特定时间范围内的均线构成的df数据
@@ -107,13 +126,14 @@ class M_line():
             Timeindex
             2018-08-02  3046.4  3025.8  2985.25  2951.7
         """
-        want_file = '%s/lastprice/ma_line/%s/%s/%s_%s.pkl' % (nature_path, exch, ins, ins, day_date)
+        yearstr = self._get_year(exch, ins)
+        want_file = '%s/lastprice/%s/ma_line/%s/%s/%s_%s.pkl' % (nature_path, yearstr, exch, ins, ins, day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:
                 return file_object.read()
         except:
-            element_df = pd.DataFrame(columns=['MA5','MA10','MA20','MA30'])
+            element_df = pd.DataFrame(columns=['MA5', 'MA10', 'MA20', 'MA30'])
             serialized = cPickle.dumps(element_df)
             return serialized
 
