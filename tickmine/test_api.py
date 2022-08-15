@@ -6,21 +6,22 @@ from tickmine.api import *
 
 
 def test_api_address():
-    assert(client_api_first != 'tcp://192.168.0.102:8110')
-    assert(client_api_second != 'tcp://192.168.0.102:8120')
-    assert(client_api_third != 'tcp://192.168.0.102:8130')
+    assert (client_api_first != 'tcp://192.168.0.102:8110')
+    assert (client_api_second != 'tcp://192.168.0.102:8120')
+    assert (client_api_third != 'tcp://192.168.0.102:8130')
+
 
 def test_exch():
     ret_exch = get_exch()
-    assert (len(ret_exch) == 8)
+    assert (len(ret_exch) == 5)
 
 
 def test_ins():
     ret_ins = get_ins('CZCE')
     assert (len(ret_ins) > 100)
 
-    ret_ins = get_ins('SHSE')
-    assert (len(ret_ins) > 100)
+    # ret_ins = get_ins('SHSE')
+    # assert (len(ret_ins) > 100)
 
 
 def test_date():
@@ -30,8 +31,8 @@ def test_date():
     ret_date = get_date('CZCE', 'TA999')
     assert (len(ret_date) > 100)
 
-    ret_date = get_date('global', 'CL')
-    assert (len(ret_date) > 10)
+    # ret_date = get_date('global', 'CL')
+    # assert (len(ret_date) > 10)
 
 
 def test_level1():
@@ -41,14 +42,14 @@ def test_level1():
     ret_level1 = get_level1('CZCE', 'TA205', '20220310', time_slice=['21:00:00', '21:30:00'])
     assert (len(ret_level1) > 10)
 
-    ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['09:00:00', '10:00:00'])
-    assert (len(ret_level1) > 10)
+    # ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['09:00:00', '10:00:00'])
+    # assert (len(ret_level1) > 10)
 
-    ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['21:00:00', '21:30:00'])
-    assert (len(ret_level1) > 10)
+    # ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['21:00:00', '21:30:00'])
+    # assert (len(ret_level1) > 10)
 
-    ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['00:00:00', '00:30:00'])
-    assert (len(ret_level1) > 10)
+    # ret_level1 = get_level1('global', 'CL', '20220310', time_slice=['00:00:00', '00:30:00'])
+    # assert (len(ret_level1) > 10)
 
     ret_level1 = get_level1('CZCE', 'TA205', '20211227', time_slice=['09:00:00', '09:30:00'])
     assert (len(ret_level1) > 10)
@@ -79,14 +80,14 @@ def test_kline():
     ret_1t_kline = get_kline('CZCE', 'TA205', '20220310', time_slice=['21:00:00', '21:30:00'])
     assert (len(ret_1t_kline) > 10)
 
-    ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['09:00:00', '10:00:00'])
-    assert (len(ret_1t_kline) > 10)
+    # ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['09:00:00', '10:00:00'])
+    # assert (len(ret_1t_kline) > 10)
 
-    ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['21:00:00', '21:30:00'])
-    assert (len(ret_1t_kline) > 10)
+    # ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['21:00:00', '21:30:00'])
+    # assert (len(ret_1t_kline) > 10)
 
-    ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['00:00:00', '00:30:00'])
-    assert (len(ret_1t_kline) > 10)
+    # ret_1t_kline = get_kline('global', 'CL', '20220310', time_slice=['00:00:00', '00:30:00'])
+    # assert (len(ret_1t_kline) > 10)
 
     ret_1t_kline = get_kline('CZCE', 'TA205', '20211227', time_slice=['09:00:00', '09:30:00'])
     assert (len(ret_1t_kline) > 10)

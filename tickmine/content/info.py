@@ -55,23 +55,38 @@ class Info:
         Args:
             exch: 交易所简称
             special_type: 指定品种
-
+            special_date: 指定日期
         Returns:
-            返回的数据类型是 list， 包含该交易所下面所有的合约
+            返回的数据类型是 list, 包含该交易所下面所有的合约
 
         Examples:
             >>> from tickmine.content.info import info
             >>> info.get_instrument('DCE')
            ['c2109', 'pg2109', ... 'jm2105', 'pp2007', 'pp2111', 'eb2204']
         """
+        special = []
+        ret = re.split('([0-9]+)', special_type)
+        for item in ret:
+            ret2 = item.split('-')
+            for item2 in ret2:
+                if item2 != '':
+                    special.append(item2)
+
         if exch == 'global':
             return []  #self._get_global_instrument(exch, special_type, special_date)
         elif exch in self.huaxin_exch:
             return []  #self._get_security(exch, special_type, special_date)
-        elif '_' in special_type:
-            return self._get_option(exch, special_type, special_date)
         else:
-            return self._get_future(exch, special_type, special_date)
+            if len(special) == 0:
+                return self._get_future(exch, '', '', special_date)
+            elif len(special) == 1:
+                return self._get_future(exch, special[0], '', special_date)
+            elif len(special) == 2 and special[1].isdigit():
+                return self._get_future(exch, special[0], special[1], special_date)
+            elif len(special) == 2 and not special[1].isdigit():
+                return self._get_option(exch, special[0], '', special[1], special_date)
+            elif len(special) == 3:
+                return self._get_option(exch, special[0], special[1], special[2], special_date)
 
     # def _get_global_instrument(self, exch, special_type, special_date):
     #     self.absolute_path = '%s/%s/%s' % (sina_database_path, exch, exch)
@@ -86,17 +101,17 @@ class Info:
 
     #     return ret_list
 
-    def _get_future(self, exch, special_type, special_date):
-        temp1 = self._get_special_database_future(exch, special_type, special_date, citic2_dst_path)
-        temp2 = self._get_special_database_future(exch, special_type, special_date, citic_dst_path)
-        temp3 = self._get_special_database_future(exch, special_type, special_date, tsaodai_dst_path)
+    def _get_future(self, exch, special_type, special_month, special_date):
+        temp1 = self._get_special_database_future(exch, special_type, special_month, special_date, citic2_dst_path)
+        temp2 = self._get_special_database_future(exch, special_type, special_month, special_date, citic_dst_path)
+        temp3 = self._get_special_database_future(exch, special_type, special_month, special_date, tsaodai_dst_path)
 
         temp = list(set(temp1 + temp2 + temp3))
         temp.sort()
 
         return temp
 
-    def _get_special_database_future(self, exch, special_type, special_date, path):
+    def _get_special_database_future(self, exch, special_type, special_month, special_date, path):
         temp_list = os.listdir(path)
         instrument_list = []
         for item in temp_list:
@@ -109,7 +124,7 @@ class Info:
         for item in instrument_list:
             ins_split = [x.strip().strip('-') for x in re.split(r'(\d+)', item) if x.strip() != '']
             if len(ins_split) == 2:
-                if (ins_split[0] == special_type or special_type == ''):
+                if (ins_split[0] == special_type or special_type == '') and special_month in ins_split[1]:
                     temp_ret_list.append(item)
         temp_ret_list.sort()
 
@@ -126,17 +141,17 @@ class Info:
 
         return ret_list
 
-    def _get_option(self, exch, special_type, special_date):
-        temp1 = self._get_special_database_option(exch, special_type, special_date, citic2_dst_path)
-        temp2 = self._get_special_database_option(exch, special_type, special_date, citic_dst_path)
-        temp3 = self._get_special_database_option(exch, special_type, special_date, tsaodai_dst_path)
+    def _get_option(self, exch, special_type, special_month, special_dir, special_date):
+        temp1 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, citic2_dst_path)
+        temp2 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, citic_dst_path)
+        temp3 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, tsaodai_dst_path)
 
         temp = list(set(temp1 + temp2 + temp3))
         temp.sort()
 
         return temp
 
-    def _get_special_database_option(self, exch, special_type, special_date, path):
+    def _get_special_database_option(self, exch, special_type, special_month, special_dir, special_date, path):
         temp_list = os.listdir(path)
         instrument_list = []
         for item in temp_list:
@@ -149,7 +164,8 @@ class Info:
         for item in instrument_list:
             ins_split = [x.strip().strip('-') for x in re.split(r'(\d+)', item) if x.strip() != '']
             if len(ins_split) == 4:
-                if (ins_split[0] == special_split[0] or special_type == ''):
+                if (ins_split[0] == special_split[0]
+                        or special_type == '') and special_month in ins_split[1] and special_dir in ins_split[2]:
                     temp_ret_list.append(item)
         temp_ret_list.sort()
 
@@ -215,10 +231,17 @@ class Info:
 info = Info()
 
 if __name__ == "__main__":
-    # print(info.get_instrument())
+    pass
+    # print(info.get_instrument('CZCE'))
 
-    # print(info._get_future('DCE', 'l', '20220610'))
+    #print(info.get_instrument('CZCE', 'TA'))
 
-    # print(info._get_option('DCE', 'l_O', '20220610'))
+    # print(info.get_instrument('CZCE', 'TA01', '20220809'))
 
-    print(info.get_date('CZCE', 'TA209'))
+    print(info.get_instrument('CZCE', 'TA01-C', '20220809'))
+
+    #print(info.get_instrument('CZCE', 'TA01-P'))
+
+    # print(info.get_instrument('CZCE', 'TA-C'))
+
+    # print(info.get_instrument('CZCE', 'TA-P'))
