@@ -1,5 +1,6 @@
 #coding=utf-8
 import datetime
+import os
 import re
 
 import _pickle as cPickle
@@ -14,9 +15,10 @@ client_api_second = 'tcp://192.168.0.102:8101'
 client_api_third = 'tcp://192.168.0.102:8150'
 
 # debug模式
-# client_api_first = 'tcp://192.168.0.102:8110'
-# client_api_second = 'tcp://192.168.0.102:8120'
-# client_api_third = 'tcp://192.168.0.102:8130'
+if 'run_mode' in os.environ.keys() and os.environ["run_mode"] == 'debug':
+    client_api_first = 'tcp://192.168.0.102:8110'
+    client_api_second = 'tcp://192.168.0.102:8120'
+    client_api_third = 'tcp://192.168.0.102:8130'
 
 client_api_fourth = 'tcp://192.168.0.106:8150'
 
