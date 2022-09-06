@@ -1,13 +1,18 @@
 import os
 import sys
 
-from tickmine.global_config import citic_dst_path, citic_src_path
 from tickmine.structure import util
+
+citic_src_path = '/home/zhoufan/baidunetdisk/citic/citic_ticks'
+citic_dst_path = {
+    '/home/zhoufan/baidunetdisk/citic/reconstruct/tick': ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022'],
+    '/home/zhoufan/baidunetdisk/citic2/reconstruct/tick': ['2023', '2024', '2025', '2026', '2027', '2028']
+}
 
 instrument_case_match = {'CZCE': 'up', 'DCE': 'low', 'SHFE': 'low', 'INE': 'low', 'CFFEX': 'up'}
 
 
-def buildTargetFileName(yearMonData: str, newDir: str, fileName: str, exchangeDir: str, isNight: bool):
+def buildTargetFileName(yearMonData: str, fileName: str, exchangeDir: str, isNight: bool):
     temp_file_path = ''
     if instrument_case_match[exchangeDir] == 'up':
         instrumentId = fileName.split(".")[0].upper()
@@ -15,6 +20,13 @@ def buildTargetFileName(yearMonData: str, newDir: str, fileName: str, exchangeDi
         instrumentId = fileName.split(".")[0].lower()
 
     yearstr = util.get_year(exchangeDir, instrumentId)
+
+    newDir = '/home/zhoufan/baidunetdisk/citic'
+    for item in citic_dst_path:
+        if yearstr in citic_dst_path[item]:
+            newDir = item
+            break
+
     if isNight == False:
         temp_file_path = newDir + "/" + yearstr + "/" + exchangeDir + "/" + exchangeDir + "/" + instrumentId + "/" + instrumentId + "_" + yearMonData + ".csv"
     else:
@@ -28,7 +40,7 @@ def buildAbsoluteDir(root: str, subDir: dir):
 
 
 def dealExtractFiles(tmpComFile: str, exchangeDir: str, isNight: bool):
-    tmpStorageDir = citic_dst_path + "/" + "tmpStorge"
+    tmpStorageDir = citic_src_path + "/" + "tmpStorge"
     if (not os.path.exists(tmpStorageDir)):
         os.makedirs(tmpStorageDir)
 
@@ -55,14 +67,15 @@ def dealExtractFiles(tmpComFile: str, exchangeDir: str, isNight: bool):
                 # print("fileName",fileName)
                 instrumentFile = buildAbsoluteDir(tmpLetterDir, fileName)
                 # print("instrumentFile:",instrumentFile)
-                targetFileName = buildTargetFileName(yearMonDataDir, citic_dst_path, fileName, exchangeDir, isNight)
+                targetFileName = buildTargetFileName(yearMonDataDir, fileName, exchangeDir, isNight)
                 # print("targetFileName:",targetFileName)
                 destDir = targetFileName[0:targetFileName.rfind("/")]
                 if (not os.path.exists(destDir)):
                     os.makedirs(destDir)
                 fixHeadError(instrumentFile)
                 fixLastContainsCommasAndDoubleContextError(instrumentFile)
-                util.copyFile(instrumentFile, targetFileName)
+                # util.copyFile(instrumentFile, targetFileName)
+                print('cp %s to %s' % (instrumentFile, targetFileName))
 
     util.delDir(tmpStorageDir)
 
@@ -76,7 +89,6 @@ def isNightDir(subExchangeDir: str):
 
 def fixHeadError(targetFilePath):
     # 解决文本第一行出现\\r\\n但是没有换行
-    #citic_dst_path = "/home/zhoufan/ttt"
     with open(targetFilePath, 'rb') as f:
         lines = []
         row_index = 0

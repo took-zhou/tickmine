@@ -8,16 +8,6 @@ import _pickle as cPickle
 import numpy as np
 import pandas as pd
 
-if os.environ.get('database') == 'tsaodai':
-    from tickmine.global_config import tsaodai_dst_path as database_path
-    from tickmine.global_config import tsaodai_nature_path as nature_path
-elif os.environ.get('database') == 'citic':
-    from tickmine.global_config import citic_dst_path as database_path
-    from tickmine.global_config import citic_nature_path as nature_path
-elif os.environ.get('database') == 'sina':
-    from tickmine.global_config import sina_dst_path as database_path
-    from tickmine.global_config import sina_nature_path as nature_path
-
 pd.set_option('display.max_rows', None)
 
 
@@ -218,12 +208,6 @@ class rawTick():
 
         return yearstr
 
-    def _get_citic_path(self, _year):
-        citic = []
-        citic2 = []
-
-        return ''
-
     def get_ctp(self, exch, ins, day_date, save_path=''):
         night_date = self._get_night_date(day_date)
 
@@ -232,11 +216,13 @@ class rawTick():
         # 20180925 郑商所数据异常（存放的是20180926的数据）
         yearstr = self._get_year(exch, ins)
         if day_date < '20180201' and not ('20161101' <= day_date <= '20161231'):
-            ins_daytime_file_root = '%s/%s/%s/%s/%s/%s_%s.csv' % (database_path, yearstr, exch, exch, ins, ins, day_date)
-            ins_nighttime_file_root = '%s/%s/%s/%s_night/%s/%s_%s.csv' % (database_path, yearstr, exch, exch, ins, ins, night_date)
+            ins_daytime_file_root = '/share/database/reconstruct/tick/%s/%s/%s/%s/%s_%s.csv' % (yearstr, exch, exch, ins, ins, day_date)
+            ins_nighttime_file_root = '/share/database/reconstruct/tick/%s/%s/%s_night/%s/%s_%s.csv' % (yearstr, exch, exch, ins, ins,
+                                                                                                        night_date)
         else:
-            ins_daytime_file_root = '%s/%s/%s/%s/%s/%s_%s.csv' % (database_path, yearstr, exch, exch, ins, ins, day_date)
-            ins_nighttime_file_root = '%s/%s/%s/%s_night/%s/%s_%s.csv' % (database_path, yearstr, exch, exch, ins, ins, day_date)
+            ins_daytime_file_root = '/share/database/reconstruct/tick/%s/%s/%s/%s/%s_%s.csv' % (yearstr, exch, exch, ins, ins, day_date)
+            ins_nighttime_file_root = '/share/database/reconstruct/tick/%s/%s/%s_night/%s/%s_%s.csv' % (yearstr, exch, exch, ins, ins,
+                                                                                                        day_date)
 
         # 读取改天白天分时数据
         element_df = pd.DataFrame()
@@ -335,7 +321,7 @@ class rawTick():
         return element_df
 
     def get_sina(self, exch, ins, day_date, save_path=''):
-        ins_daytime_file_root = '%s/%s/%s/%s/%s_%s.csv' % (database_path, exch, exch, ins, ins, day_date)
+        ins_daytime_file_root = '/share/database/reconstruct/tick/%s/%s/%s/%s_%s.csv' % (exch, exch, ins, ins, day_date)
         element_df = pd.DataFrame()
 
         if os.path.exists(ins_daytime_file_root) == True:
@@ -387,13 +373,15 @@ class rawTick():
         else:
             return self.get_ctp(exch, ins, day_date, save_path)
 
-    def generate_all(self, keyword='', inclde_option='no'):
-        for year in os.listdir(database_path):
-            year_exch_day_path = database_path + "/" + year
+    def generate_all(self, keyword='', data_type=''):
+        for year in os.listdir('/share/database/reconstruct/tick'):
+            year_exch_day_path = '/share/database/reconstruct/tick' + "/" + year
             for exch in os.listdir(year_exch_day_path):
                 exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
                 for ins in os.listdir(exch_day_path):
-                    if inclde_option == 'no' and len(ins) > 6:
+                    if data_type == 'future' and len(ins) > 6:
+                        continue
+                    if data_type == 'option' and len(ins) <= 6:
                         continue
                     ins_path = exch_day_path + "/" + ins
                     for ins_data in os.listdir(ins_path):
@@ -401,25 +389,8 @@ class rawTick():
                         if keyword in ins_data_path:
                             day_date = ins_data.split('.')[0].split('_')[-1]
                             print('rawtick generate %s %s %s' % (exch, ins, day_date))
-                            yearstr = self._get_year(exch, ins)
-                            dir_path = '%s/%s/%s/rawtick/%s/%s' % (nature_path, 'lastprice', yearstr, exch, ins)
+                            dir_path = '/share/database/naturedata/lastprice/%s/rawtick/%s/%s' % (year, exch, ins)
                             self.generate(exch, ins, day_date, save_path=dir_path)
-
-    def _get_year(self, exch, ins):
-        name_split = re.split('([0-9]+)', ins)
-        yearstr = ''
-        if len(name_split) >= 3:
-            _year_ = name_split[1]
-
-            if 'CZCE' == exch:
-                if int(_year_[0:1]) > 4:
-                    yearstr = '201%s' % _year_[0:1]
-                else:
-                    yearstr = '202%s' % _year_[0:1]
-            else:
-                yearstr = '20%s' % _year_[0:2]
-
-        return yearstr
 
     def get(self, exch, ins, day_date):
         """ 获取原始数据
@@ -437,7 +408,7 @@ class rawTick():
             压缩后的字符流
         """
         yearstr = self._get_year(exch, ins)
-        want_file = '%s/%s/%s/rawtick/%s/%s/%s_%s.pkl' % (nature_path, 'lastprice', yearstr, exch, ins, ins, day_date)
+        want_file = '/share/database/naturedata/lastprice/%s/rawtick/%s/%s/%s_%s.pkl' % (yearstr, exch, ins, ins, day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:

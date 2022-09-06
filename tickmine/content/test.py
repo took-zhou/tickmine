@@ -1,10 +1,30 @@
-import gzip
+# import gzip
+# import os
+
+# import _pickle as cPickle
+# import pandas as pd
+
+import datetime
 import os
+import time
 
-import _pickle as cPickle
-import pandas as pd
+command = "python /share/quantation/straview/tickmine/tickmine/content/raw_tick.py '' option"
+msg = '%s ok.' % (command) if os.system(command) == 0 else '%s error.' % (command)
+print(msg)
 
-base_dir = '/share/baidunetdisk/citic/naturedata/'
+command = "python /share/quantation/straview/tickmine/tickmine/content/k_line.py '' option"
+msg = '%s ok.' % (command) if os.system(command) == 0 else '%s error.' % (command)
+print(msg)
+
+command = "python /share/quantation/straview/tickmine/tickmine/content/level1.py '' option"
+msg = '%s ok.' % (command) if os.system(command) == 0 else '%s error.' % (command)
+print(msg)
+
+command = "python /share/quantation/straview/tickmine/tickmine/content/m_line.py '' option"
+msg = '%s ok.' % (command) if os.system(command) == 0 else '%s error.' % (command)
+print(msg)
+
+# base_dir = '/share/baidunetdisk/citic/naturedata/'
 
 # for curDir, dirs, files in os.walk(base_dir):
 #     for file in files:
@@ -92,45 +112,45 @@ base_dir = '/share/baidunetdisk/citic/naturedata/'
 #                         os.system(command)
 #                         continue
 
-base_dir = '/share/baidunetdisk/tsaodai/temp'
-import re
+# base_dir = '/share/baidunetdisk/tsaodai/temp'
+# import re
 
-ret = os.listdir(base_dir)
-for item2 in ret:
-    path = '%s/%s' % (base_dir, item2)
-    ret2 = os.listdir(path)
-    for item3 in ret2:
-        path = '%s/%s/%s' % (base_dir, item2, item3)
-        ret3 = os.listdir(path)
-        for item4 in ret3:
-            path = '%s/%s/%s/%s' % (base_dir, item2, item3, item4)
-            ret4 = os.listdir(path)
-            for item5 in ret4:
-                path = '%s/%s/%s/%s/%s' % (base_dir, item2, item3, item4, item5)
-                ret5 = os.listdir(path)
-                for item6 in ret5:
-                    path = '%s/%s/%s/%s/%s/%s' % (base_dir, item2, item3, item4, item5, item6)
-                    name_split = re.split('([0-9]+)', item6)
-                    if len(name_split) >= 3:
-                        _year_ = name_split[1]
+# ret = os.listdir(base_dir)
+# for item2 in ret:
+#     path = '%s/%s' % (base_dir, item2)
+#     ret2 = os.listdir(path)
+#     for item3 in ret2:
+#         path = '%s/%s/%s' % (base_dir, item2, item3)
+#         ret3 = os.listdir(path)
+#         for item4 in ret3:
+#             path = '%s/%s/%s/%s' % (base_dir, item2, item3, item4)
+#             ret4 = os.listdir(path)
+#             for item5 in ret4:
+#                 path = '%s/%s/%s/%s/%s' % (base_dir, item2, item3, item4, item5)
+#                 ret5 = os.listdir(path)
+#                 for item6 in ret5:
+#                     path = '%s/%s/%s/%s/%s/%s' % (base_dir, item2, item3, item4, item5, item6)
+#                     name_split = re.split('([0-9]+)', item6)
+#                     if len(name_split) >= 3:
+#                         _year_ = name_split[1]
 
-                        if 'CZCE' in path:
-                            if int(_year_[0:1]) > 4:
-                                yearstr = '201%s' % _year_[0:1]
-                            else:
-                                yearstr = '202%s' % _year_[0:1]
-                        else:
-                            yearstr = '20%s' % _year_[0:2]
+#                         if 'CZCE' in path:
+#                             if int(_year_[0:1]) > 4:
+#                                 yearstr = '201%s' % _year_[0:1]
+#                             else:
+#                                 yearstr = '202%s' % _year_[0:1]
+#                         else:
+#                             yearstr = '20%s' % _year_[0:2]
 
-                        temp_target_path = path.replace('/temp/', '/')
-                        temp_target_path_split = temp_target_path.split('/')
-                        temp_split = temp_target_path_split[0:-3] + [yearstr] + temp_target_path_split[-3:-1]
-                        target_path = '/'.join(temp_split)
-                        if not os.path.exists(target_path):
-                            os.makedirs(target_path)
-                        command = 'mv %s %s' % (path, target_path)
-                        #print(command)
-                        os.system(command)
+#                         temp_target_path = path.replace('/temp/', '/')
+#                         temp_target_path_split = temp_target_path.split('/')
+#                         temp_split = temp_target_path_split[0:-3] + [yearstr] + temp_target_path_split[-3:-1]
+#                         target_path = '/'.join(temp_split)
+#                         if not os.path.exists(target_path):
+#                             os.makedirs(target_path)
+#                         command = 'mv %s %s' % (path, target_path)
+#                         #print(command)
+#                         os.system(command)
 
 # for curDir, dirs, files in os.walk(base_dir):
 #     for dir in dirs:

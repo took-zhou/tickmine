@@ -7,17 +7,6 @@ import sys
 
 import _pickle as cPickle
 import pandas as pd
-
-if os.environ.get('database') == 'citic':
-    from tickmine.global_config import citic_dst_path as database_path
-    from tickmine.global_config import citic_nature_path as nature_path
-elif os.environ.get('database') == 'tsaodai':
-    from tickmine.global_config import tsaodai_dst_path as database_path
-    from tickmine.global_config import tsaodai_nature_path as nature_path
-elif os.environ.get('database') == 'sina':
-    from tickmine.global_config import sina_dst_path as database_path
-    from tickmine.global_config import sina_nature_path as nature_path
-
 from tickmine.content.raw_tick import rawtick
 
 pd.set_option('display.max_rows', None)
@@ -205,19 +194,21 @@ class Level1():
 
         return ask_bid_df
 
-    def generate_all(self, keyword='', inclde_option='no'):
-        for year in os.listdir(database_path):
-            year_exch_day_path = database_path + "/" + year
+    def generate_all(self, keyword='', data_type=''):
+        for year in os.listdir('/share/database/reconstruct/tick'):
+            year_exch_day_path = '/share/database/reconstruct/tick' + "/" + year
             for exch in os.listdir(year_exch_day_path):
                 exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
                 for ins in os.listdir(exch_day_path):
-                    if inclde_option == 'no' and len(ins) > 6:
+                    if data_type == 'future' and len(ins) > 6:
+                        continue
+                    if data_type == 'option' and len(ins) <= 6:
                         continue
                     ins_path = exch_day_path + "/" + ins
                     for ins_data in os.listdir(ins_path):
                         ins_data_path = ins_path + "/" + ins_data
                         if keyword in ins_data_path:
-                            dir_path = '%s/tradepoint/%s/askbidpair/%s/%s' % (nature_path, year, exch, ins)
+                            dir_path = '/share/database/naturedata/tradepoint/%s/askbidpair/%s/%s' % (year, exch, ins)
                             day_date = ins_data.split('.')[0].split('_')[-1]
                             print('level1 generate %s %s %s' % (exch, ins, day_date))
                             self.generate(exch, ins, day_date, save_path=dir_path)
@@ -261,7 +252,7 @@ class Level1():
             ...
         """
         yearstr = self._get_year(exch, ins)
-        want_file = '%s/tradepoint/%s/askbidpair/%s/%s/%s_%s.pkl' % (nature_path, yearstr, exch, ins, ins, day_date)
+        want_file = '/share/database/naturedata/tradepoint/%s/askbidpair/%s/%s/%s_%s.pkl' % (yearstr, exch, ins, ins, day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:

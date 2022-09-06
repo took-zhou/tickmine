@@ -6,17 +6,6 @@ import sys
 
 import _pickle as cPickle
 import pandas as pd
-
-if os.environ.get('database') == 'citic':
-    from tickmine.global_config import citic_dst_path as database_path
-    from tickmine.global_config import citic_nature_path as nature_path
-elif os.environ.get('database') == 'tsaodai':
-    from tickmine.global_config import tsaodai_dst_path as database_path
-    from tickmine.global_config import tsaodai_nature_path as nature_path
-elif os.environ.get('database') == 'sina':
-    from tickmine.global_config import sina_dst_path as database_path
-    from tickmine.global_config import sina_nature_path as nature_path
-
 from tickmine.content.raw_tick import rawtick
 
 
@@ -396,13 +385,15 @@ class K_line():
         elif 'D' in period:
             return self._get_pair_1D_k_line(exch1, ins1, exch2, ins2, day_date, period, save_path)
 
-    def generate_all(self, keyword='', inclde_option='no'):
-        for year in os.listdir(database_path):
-            year_exch_day_path = database_path + "/" + year
+    def generate_all(self, keyword='', data_type=''):
+        for year in os.listdir('/share/database/reconstruct/tick'):
+            year_exch_day_path = '/share/database/reconstruct/tick' + "/" + year
             for exch in os.listdir(year_exch_day_path):
                 exch_day_path = year_exch_day_path + "/" + exch + "/" + exch
                 for ins in os.listdir(exch_day_path):
-                    if inclde_option == 'no' and len(ins) > 6:
+                    if data_type == 'future' and len(ins) > 6:
+                        continue
+                    if data_type == 'option' and len(ins) <= 6:
                         continue
                     ins_path = exch_day_path + "/" + ins
                     for ins_data in os.listdir(ins_path):
@@ -410,13 +401,13 @@ class K_line():
                         if keyword in ins_data_path:
                             day_date = ins_data.split('.')[0].split('_')[-1]
                             print('kline generate %s %s %s' % (exch, ins, day_date))
-                            dir_path = '%s/%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', year, self.period2file['1T'], exch, ins)
+                            dir_path = '/share/database/naturedata/lastprice/%s/%s_kline/%s/%s' % (year, self.period2file['1T'], exch, ins)
                             self.generate(exch, ins, day_date, '1T', save_path=dir_path)
-                            dir_path = '%s/%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', year, self.period2file['1D'], exch, ins)
+                            dir_path = '/share/database/naturedata/lastprice/%s/%s_kline/%s/%s' % (year, self.period2file['1D'], exch, ins)
                             self.generate(exch, ins, day_date, '1D', save_path=dir_path)
 
     def multiperiod_extension(self):
-        m1_nature_path = '%s/%s/%s_kline' % (nature_path, 'lastprice', self.period2file['1T'])
+        m1_nature_path = '/share/database/naturedata/lastprice/%s_kline' % (self.period2file['1T'])
         for exch in os.listdir(m1_nature_path):
             exch_path = m1_nature_path + "/" + exch
             for ins in os.listdir(exch_path):
@@ -427,10 +418,10 @@ class K_line():
                     # ins_data_path = ins_path + "/" + ins_date
                     day_date = ins_date.split('.')[0].split('_')[-1]
                     print('kline generate %s %s %s' % (exch, ins, day_date))
-                    dir_path = '%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', self.period2file['60T'], exch, ins)
+                    dir_path = '/share/database/naturedata/lastprice/%s_kline/%s/%s' % (self.period2file['60T'], exch, ins)
                     self._t_period_extension(exch, ins, day_date, save_path=dir_path)
 
-        d1_nature_path = '%s/%s/%s_kline' % (nature_path, 'lastprice', self.period2file['1D'])
+        d1_nature_path = '/share/database/naturedata/lastprice/%s_kline' % (self.period2file['1D'])
         for exch in os.listdir(d1_nature_path):
             exch_path = d1_nature_path + "/" + exch
             for ins in os.listdir(exch_path):
@@ -441,7 +432,7 @@ class K_line():
                     # ins_data_path = ins_path + "/" + ins_date
                     day_date = ins_date.split('.')[0].split('_')[-1]
                     print('kline generate %s %s %s' % (exch, ins, day_date))
-                    dir_path = '%s/%s/%s_kline/%s/%s' % (nature_path, 'lastprice', self.period2file['1W'], exch, ins)
+                    dir_path = '/share/database/naturedata/lastprice/%s_kline/%s/%s' % (self.period2file['1W'], exch, ins)
                     self._d_period_extension(exch, ins, day_date, save_path=dir_path)
 
     def _get_year(self, exch, ins):
@@ -480,7 +471,8 @@ class K_line():
             2018-08-03  3089.0  3200.0  3077.0  3200.0  466340      370216.0
         """
         yearstr = self._get_year(exch, ins)
-        want_file = '%s/lastprice/%s/%s_kline/%s/%s/%s_%s.pkl' % (nature_path, yearstr, self.period2file[period], exch, ins, ins, day_date)
+        want_file = '/share/database/naturedata/lastprice/%s/%s_kline/%s/%s/%s_%s.pkl' % (yearstr, self.period2file[period], exch, ins, ins,
+                                                                                          day_date)
 
         try:
             with gzip.open(want_file, 'rb', compresslevel=1) as file_object:

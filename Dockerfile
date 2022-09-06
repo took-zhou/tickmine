@@ -9,8 +9,9 @@ ARG process=tickmine
 RUN apt-get update && apt-get install -y screen && apt-get install -y vim && apt-get install -y net-tools && \
     apt-get install -y iputils-ping && pip install pipreqs && apt-get install -y unrar
 
-RUN pip install --no-deps --index-url http://devpi.cdsslh.com:8090/root/dev tickmine --trusted-host devpi.cdsslh.com && \
-    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple tickmine
+#安装私有python库
+COPY requirements.txt /root/requirements.txt
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r /root/requirements.txt
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8

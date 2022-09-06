@@ -1,7 +1,7 @@
 import datetime
 import os
 
-from tickmine.global_config import tsaodai_dst_path
+tsaodai_dst_path = '/share/database/reconstruct/tick'
 
 old_date = datetime.datetime.today() - datetime.timedelta(60)
 old_date = '%04d%02d%02d' % (old_date.year, old_date.month, old_date.day)

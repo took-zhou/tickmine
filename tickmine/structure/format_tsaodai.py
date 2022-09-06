@@ -113,7 +113,8 @@ def reconstruct(dataRootPath, newDataRootPath, recordFileName, isNight: bool = F
 
 
 def main():
-    from tickmine.global_config import tsaodai_dst_path, tsaodai_src_path
+    tsaodai_src_path = '/home/zhoufan/baidunetdisk/tsaodai/tsaodai_ticks'
+    tsaodai_dst_path = '/home/zhoufan/baidunetdisk/tsaodai/reconstruct/tick'
 
     recordFileName = "record.json"
 

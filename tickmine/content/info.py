@@ -2,8 +2,6 @@ import datetime
 import os
 import re
 
-from tickmine.global_config import *
-
 
 class Info:
 
@@ -26,19 +24,9 @@ class Info:
             >>> info.get_date('DCE', 'c2105')
             ['20200716', '20210205', ... '20200902', '20210428', '20210506', '20210426']
         """
-        temp1 = self._get_special_database_date(exch, ins, citic2_dst_path)
-        temp2 = self._get_special_database_date(exch, ins, citic_dst_path)
-        temp3 = self._get_special_database_date(exch, ins, tsaodai_dst_path)
-
-        temp = list(set(temp1 + temp2 + temp3))
-        temp.sort()
-
-        return temp
-
-    def _get_special_database_date(self, exch, ins, path):
         sorted_data = []
         yearstr = self._get_year(exch, ins)
-        sp_path = '%s/%s/%s/%s/%s' % (path, yearstr, exch, exch, ins)
+        sp_path = '/share/database/reconstruct/tick/%s/%s/%s/%s' % (yearstr, exch, exch, ins)
         if os.path.exists(sp_path) == True:
             for item in os.listdir(sp_path):
                 datastr = item.split('_')[-1].split('.')[0]
@@ -75,7 +63,7 @@ class Info:
         if exch == 'global':
             return []  #self._get_global_instrument(exch, special_type, special_date)
         elif exch in self.huaxin_exch:
-            return []  #self._get_security(exch, special_type, special_date)
+            return self._get_security(exch, special_type, special_date)
         else:
             if len(special) == 0:
                 return self._get_future(exch, '', '', special_date)
@@ -102,21 +90,11 @@ class Info:
     #     return ret_list
 
     def _get_future(self, exch, special_type, special_month, special_date):
-        temp1 = self._get_special_database_future(exch, special_type, special_month, special_date, citic2_dst_path)
-        temp2 = self._get_special_database_future(exch, special_type, special_month, special_date, citic_dst_path)
-        temp3 = self._get_special_database_future(exch, special_type, special_month, special_date, tsaodai_dst_path)
-
-        temp = list(set(temp1 + temp2 + temp3))
-        temp.sort()
-
-        return temp
-
-    def _get_special_database_future(self, exch, special_type, special_month, special_date, path):
-        temp_list = os.listdir(path)
+        temp_list = os.listdir('/share/database/reconstruct/tick')
         instrument_list = []
         for item in temp_list:
-            if os.path.exists('%s/%s/%s/%s' % (path, item, exch, exch)):
-                for item2 in os.listdir('%s/%s/%s/%s' % (path, item, exch, exch)):
+            if os.path.exists('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
+                for item2 in os.listdir('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
                     instrument_list.append(item2)
 
         instrument_list = list(set(instrument_list))
@@ -132,9 +110,12 @@ class Info:
             ret_list = []
             for item in temp_ret_list:
                 yearstr = self._get_year(exch, item)
-                date_list = [item.split('_')[-1].split('.')[0] for item in os.listdir('%s/%s/%s/%s/%s' % (path, yearstr, exch, exch, item))]
+                date_list = [
+                    item.split('_')[-1].split('.')[0]
+                    for item in os.listdir('/share/database/reconstruct/tick/%s/%s/%s/%s' % (yearstr, exch, exch, item))
+                ]
                 date_list.sort()
-                if date_list[0] <= special_date <= date_list[-1]:
+                if len(date_list) > 0 and date_list[0] <= special_date <= date_list[-1]:
                     ret_list.append(item)
         else:
             ret_list = temp_ret_list
@@ -142,21 +123,11 @@ class Info:
         return ret_list
 
     def _get_option(self, exch, special_type, special_month, special_dir, special_date):
-        temp1 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, citic2_dst_path)
-        temp2 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, citic_dst_path)
-        temp3 = self._get_special_database_option(exch, special_type, special_month, special_dir, special_date, tsaodai_dst_path)
-
-        temp = list(set(temp1 + temp2 + temp3))
-        temp.sort()
-
-        return temp
-
-    def _get_special_database_option(self, exch, special_type, special_month, special_dir, special_date, path):
-        temp_list = os.listdir(path)
+        temp_list = os.listdir('/share/database/reconstruct/tick')
         instrument_list = []
         for item in temp_list:
-            if os.path.exists('%s/%s/%s/%s' % (path, item, exch, exch)):
-                for item2 in os.listdir('%s/%s/%s/%s' % (path, item, exch, exch)):
+            if os.path.exists('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
+                for item2 in os.listdir('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
                     instrument_list.append(item2)
 
         special_split = special_type.split('_')
@@ -173,26 +144,39 @@ class Info:
             ret_list = []
             for item in temp_ret_list:
                 yearstr = self._get_year(exch, item)
-                date_list = [item.split('_')[-1].split('.')[0] for item in os.listdir('%s/%s/%s/%s/%s' % (path, yearstr, exch, exch, item))]
+                date_list = [
+                    item.split('_')[-1].split('.')[0]
+                    for item in os.listdir('/share/database/reconstruct/tick/%s/%s/%s/%s' % (yearstr, exch, exch, item))
+                ]
                 date_list.sort()
-                if date_list[0] <= special_date <= date_list[-1]:
+                if len(date_list) > 0 and date_list[0] <= special_date <= date_list[-1]:
                     ret_list.append(item)
         else:
             ret_list = temp_ret_list
 
         return ret_list
 
-    # def _get_security(self, exch, special_type, special_date):
-    #     self.absolute_path = '%s/%s/%s' % (huaxin_database_path, exch, exch)
-    #     instrument_list = os.listdir(self.absolute_path)
-    #     ret_list = []
-    #     for item in instrument_list:
-    #         if len(item) >= 6 and special_type == item[0:len(special_type)]:
-    #             ret_list.append(item)
+    def _get_security(self, exch, special_type, special_date):
+        temp_list = os.listdir('/share/database/reconstruct/tick')
 
-    #     ret_list.sort()
+        ret_list = []
+        for item in temp_list:
+            if os.path.exists('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
+                for item2 in os.listdir('/share/database/reconstruct/tick/%s/%s/%s' % (item, exch, exch)):
+                    if len(item2) >= 6 and special_type == item2[0:len(special_type)]:
+                        if special_date != '':
+                            date_list = [
+                                item3.split('_')[-1].split('.')[0]
+                                for item3 in os.listdir('/share/database/reconstruct/tick/%s/%s/%s/%s' % (item, exch, exch, item2))
+                            ]
+                            date_list.sort()
+                            if len(date_list) > 0 and date_list[0] <= special_date <= date_list[-1]:
+                                ret_list.append(item2)
+                        else:
+                            ret_list.append(item2)
 
-    #     return ret_list
+        ret_list.sort()
+        return ret_list
 
     def _get_year(self, exch, ins):
         name_split = re.split('([0-9]+)', ins)
@@ -222,23 +206,28 @@ class Info:
         Examples:
             >>> from tickmine.content.info import info
             >>> info.get_exchange()
-           ['CZCE', 'CFFEX', 'INE', 'SHFE', 'DCE']
-        """
 
-        return self.ctp_exch
+        """
+        temp_list = os.listdir('/share/database/reconstruct/tick')
+        exch_list = []
+        for item in temp_list:
+            for item2 in os.listdir('/share/database/reconstruct/tick/%s' % (item)):
+                exch_list.append(item2)
+
+        ret = list(set(exch_list))
+        return ret
 
 
 info = Info()
 
 if __name__ == "__main__":
-    pass
-    # print(info.get_instrument('CZCE'))
+    print(info.get_instrument('SZSE', '002'))
 
-    #print(info.get_instrument('CZCE', 'TA'))
+    # print(info.get_instrument('CZCE', 'TA'))
 
-    # print(info.get_instrument('CZCE', 'TA01', '20220809'))
+    # print(info.get_instrument('CZCE', 'TA01', '20220628'))
 
-    print(info.get_instrument('CZCE', 'TA01-C', '20220809'))
+    #print(info.get_instrument('CZCE', 'TA01-C', '20220628'))
 
     #print(info.get_instrument('CZCE', 'TA01-P'))
 
