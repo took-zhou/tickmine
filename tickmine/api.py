@@ -283,7 +283,14 @@ def get_ins(exch, special_type='', special_date=''):
         c.connect(client_api)
         temp_b = c.ins(exch, special_type, special_date)
         c.close()
-        temp = temp_a + temp_b
+
+        c = zerorpc.Client(timeout=300, heartbeat=None)
+        client_api = topology.ip_dict['tickserver_tsaodai1_2']
+        c.connect(client_api)
+        temp_c = c.ins(exch, special_type, special_date)
+        c.close()
+        temp = temp_a + temp_b + temp_c
+        temp = list(set(temp))
 
     return temp
 
@@ -311,7 +318,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_rawtick('CZCE', 'TA209', '20220310')
+    ret = get_ins('CZCE', 'OI01C', '')
     # for item in ret:
     #     out = get_rawtick('CZCE', 'AP301', item)
     #     # print(out)
