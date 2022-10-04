@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="tickmine",
-    version="4.6.4",
+    version="4.6.5",
     author="zhoufan",
     author_email="zhoufan@cdsslh.com",
     description="data layer",

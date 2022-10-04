@@ -249,7 +249,7 @@ def get_date(exch, ins):
     else:
         if _get_year(exch, ins) <= '2022':
             c = zerorpc.Client(timeout=300, heartbeat=None)
-            client_api = topology.ip_dict['tickserver_citic1_1']
+            client_api = topology.ip_dict['tickserver_citic1_2-4']
             c.connect(client_api)
             temp = c.date(exch, ins)
             c.close()
@@ -257,8 +257,17 @@ def get_date(exch, ins):
             c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_citic2_2']
             c.connect(client_api)
-            temp = c.date(exch, ins)
+            temp_a = c.date(exch, ins)
             c.close()
+
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_tsaodai1_2']
+            c.connect(client_api)
+            temp_b = c.date(exch, ins)
+            c.close()
+
+            temp = list(set(temp_a + temp_b))
+            temp.sort()
 
     return temp
 
@@ -318,7 +327,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_ins('CZCE', 'OI01C', '')
+    ret = get_date('CZCE', 'TA301')
     # for item in ret:
     #     out = get_rawtick('CZCE', 'AP301', item)
     #     # print(out)
