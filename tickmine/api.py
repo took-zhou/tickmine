@@ -110,7 +110,7 @@ def get_rawtick(exch, ins, day_date, time_slice=[]):
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic1_1']
+                client_api = topology.ip_dict['tickserver_citic1_2-4']
                 c.connect(client_api)
                 temp = cPickle.loads(c.rawtick(exch, ins, day_date))
                 c.close()
@@ -148,7 +148,7 @@ def get_kline(exch, ins, day_date, time_slice=[], period='1T'):
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic1_1']
+                client_api = topology.ip_dict['tickserver_citic1_2-4']
                 c.connect(client_api)
                 temp = cPickle.loads(c.kline(exch, ins, day_date, period))
                 c.close()
@@ -186,7 +186,7 @@ def get_level1(exch, ins, day_date, time_slice=[]):
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic1_1']
+                client_api = topology.ip_dict['tickserver_citic1_2-4']
                 c.connect(client_api)
                 temp = cPickle.loads(c.level1(exch, ins, day_date))
                 c.close()
@@ -224,7 +224,7 @@ def get_mline(exch, ins, day_date):
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic1_1']
+                client_api = topology.ip_dict['tickserver_citic1_2-4']
                 c.connect(client_api)
                 temp = cPickle.loads(c.mline(exch, ins, day_date))
                 c.close()
@@ -282,7 +282,7 @@ def get_ins(exch, special_type='', special_date=''):
         c.close()
     else:
         c = zerorpc.Client(timeout=300, heartbeat=None)
-        client_api = topology.ip_dict['tickserver_citic1_1']
+        client_api = topology.ip_dict['tickserver_citic1_2-4']
         c.connect(client_api)
         temp_a = c.ins(exch, special_type, special_date)
         c.close()
@@ -327,7 +327,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_date('CZCE', 'TA301')
+    ret = get_ins('CZCE', 'TA10')
     # for item in ret:
     #     out = get_rawtick('CZCE', 'AP301', item)
     #     # print(out)
