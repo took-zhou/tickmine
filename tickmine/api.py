@@ -107,6 +107,7 @@ def get_rawtick(exch, ins, day_date, time_slice=[]):
             client_api = topology.ip_dict['tickserver_tsaodai1_2']
             c.connect(client_api)
             temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+            c.close()
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -145,6 +146,7 @@ def get_kline(exch, ins, day_date, time_slice=[], period='1T'):
             client_api = topology.ip_dict['tickserver_tsaodai1_2']
             c.connect(client_api)
             temp = cPickle.loads(c.kline(exch, ins, day_date, period))
+            c.close()
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -183,6 +185,7 @@ def get_level1(exch, ins, day_date, time_slice=[]):
             client_api = topology.ip_dict['tickserver_tsaodai1_2']
             c.connect(client_api)
             temp = cPickle.loads(c.level1(exch, ins, day_date))
+            c.close()
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -221,6 +224,7 @@ def get_mline(exch, ins, day_date):
             client_api = topology.ip_dict['tickserver_tsaodai1_2']
             c.connect(client_api)
             temp = cPickle.loads(c.mline(exch, ins, day_date))
+            c.close()
         else:
             if _get_year(exch, ins) <= '2022':
                 c = zerorpc.Client(timeout=300, heartbeat=None)
@@ -327,7 +331,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_ins('CZCE', 'TA10')
+    ret = get_kline('CZCE', 'TA301', '20221206')
     # for item in ret:
     #     out = get_rawtick('CZCE', 'AP301', item)
     #     # print(out)
@@ -338,3 +342,4 @@ if __name__ == "__main__":
     end = time.time()
     runTime = end - start
     print("run time: ", runTime)
+    time.sleep(10000)
