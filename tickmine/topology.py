@@ -1,15 +1,16 @@
 class Topology:
     '''
-    port分配规则：
+    port分配规则:
     tsaodai1_* 812* 8120 是debug口 8219是nginx口
     citic1_* 811* 8110 是debug口 8119是nginx口
     citic2_* 814* 8140 是debug口 8149是nginx口
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
     '''
 
-    def __init__(self):
+    def __init__(self, _local=True):
         self.gradation_list = []
         self.ip_dict = {}
+        self.is_local = _local
 
         gradation = {
             'docker_name': 'tickserver_tsaodai1_1',
@@ -86,7 +87,10 @@ class Topology:
         self.gradation_list.append(gradation.copy())
 
         for item in self.gradation_list:
-            self.ip_dict[item['docker_name']] = item['access_api']
+            if self.is_local == True:
+                self.ip_dict[item['docker_name']] = item['access_api']
+            else:
+                self.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.102', 'onepiece.cdsslh.com')
 
 
 topology = Topology()
