@@ -7,10 +7,9 @@ class Topology:
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
     '''
 
-    def __init__(self, _local=True):
+    def __init__(self):
         self.gradation_list = []
         self.ip_dict = {}
-        self.is_local = _local
 
         gradation = {
             'docker_name': 'tickserver_tsaodai1_1',
@@ -87,10 +86,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
 
         for item in self.gradation_list:
-            if self.is_local == True:
-                self.ip_dict[item['docker_name']] = item['access_api']
-            else:
-                self.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.102', 'onepiece.cdsslh.com')
+            self.ip_dict[item['docker_name']] = item['access_api']
 
 
 topology = Topology()
