@@ -360,11 +360,31 @@ def get_exch():
     return temp
 
 
+def get_activity(exch, ins, day_date):
+    temp = []
+    try:
+        c = zerorpc.Client(timeout=300, heartbeat=None)
+        client_api = topology.ip_dict['tickserver_summary1_2']
+        c.connect(client_api)
+        temp = cPickle.loads(c.activity(exch, ins, day_date))
+        c.close()
+
+    except:
+        pass
+
+    return temp
+
+
 if __name__ == "__main__":
     import time
 
     start = time.time()
-    ret = get_kline('CZCE', 'TA301', '20221206')
+    ret = get_activity('CFFEX', 'IC', '20150416')
+    ret_ins = ret[ret['Ins'] == 'IC1505']
+    print(ret[ret['Ins'] == 'IC1505'].InsDegree[0])
+    print(ret_ins.InsDegree[0])
+    print(ret_ins.GroupDegree[0])
+
     # for item in ret:
     #     out = get_rawtick('CZCE', 'AP301', item)
     #     # print(out)

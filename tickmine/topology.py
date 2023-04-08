@@ -5,6 +5,7 @@ class Topology:
     citic1_* 811* 8110 是debug口 8119是nginx口
     citic2_* 814* 8140 是debug口 8149是nginx口
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
+    summary1_* 815* 8150 是debug口 8159是nginx口
     '''
 
     def __init__(self):
@@ -82,6 +83,26 @@ class Topology:
             'contain_exch': ['SHSE', 'SZSE'],
             'contain_type': ['security'],
             'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+
+        gradation = {
+            'docker_name': 'tickserver_summary1_1',
+            'access_api': 'tcp://192.168.0.102:8150',
+            'contain_year': ['all'],
+            'contain_exch': ['all'],
+            'contain_type': ['all'],
+            'mode': 'debug'
+        }
+        self.gradation_list.append(gradation.copy())
+
+        gradation = {
+            'docker_name': 'tickserver_summary1_2',
+            'access_api': 'tcp://192.168.0.102:8151',
+            'contain_year': ['all'],
+            'contain_exch': ['all'],
+            'contain_type': ['all'],
+            'mode': 'debug'
         }
         self.gradation_list.append(gradation.copy())
 
