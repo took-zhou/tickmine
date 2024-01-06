@@ -7,7 +7,7 @@ from tickmine.api import *
 
 def test_exch():
     ret_exch = get_exch()
-    assert (len(ret_exch) == 7)
+    assert (len(ret_exch) == 8)
 
 
 def test_ins():

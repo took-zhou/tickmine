@@ -6,6 +6,7 @@ class Topology:
     citic2_* 814* 8140 是debug口 8149是nginx口
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
     summary1_* 815* 8150 是debug口 8159是nginx口
+    baostock1_* 816* 8160 是debug口 8169是nginx口
     '''
 
     def __init__(self):

@@ -17,7 +17,7 @@ try:
 except:
     print('select external api')
     for item in topology.gradation_list:
-        topology.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.102', 'onepiece.cdsslh.com')
+        topology.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.102', 'tsaodai.com')
 
 
 def _get_night_date(_data):
@@ -376,23 +376,24 @@ def get_activity(exch, ins, day_date):
 
 
 if __name__ == "__main__":
-    import time
+    # import time
 
-    start = time.time()
-    ret = get_activity('CFFEX', 'IC', '20150416')
-    ret_ins = ret[ret['Ins'] == 'IC1505']
-    print(ret[ret['Ins'] == 'IC1505'].InsDegree[0])
-    print(ret_ins.InsDegree[0])
-    print(ret_ins.GroupDegree[0])
+    # start = time.time()
+    # ret = get_activity('CFFEX', 'IC', '20150416')
+    # ret_ins = ret[ret['Ins'] == 'IC1505']
+    # print(ret[ret['Ins'] == 'IC1505'].InsDegree[0])
+    # print(ret_ins.InsDegree[0])
+    # print(ret_ins.GroupDegree[0])
 
-    # for item in ret:
-    #     out = get_rawtick('CZCE', 'AP301', item)
-    #     # print(out)
-    #     if len(out) == 0:
-    #         print(item)
-    print(ret)
+    # # for item in ret:
+    # #     out = get_rawtick('CZCE', 'AP301', item)
+    # #     # print(out)
+    # #     if len(out) == 0:
+    # #         print(item)
+    # print(ret)
 
-    end = time.time()
-    runTime = end - start
-    print("run time: ", runTime)
-    time.sleep(10000)
+    # end = time.time()
+    # runTime = end - start
+    # print("run time: ", runTime)
+    # time.sleep(10000)
+    print(get_exch())
