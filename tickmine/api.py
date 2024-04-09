@@ -87,21 +87,16 @@ def _get_time_slice_sina(_data, _time):
     return ret
 
 
-def _get_year(exch, ins):
-    name_split = re.split('([0-9]+)', ins)
-    yearstr = ''
-    if len(name_split) >= 3:
-        _year_ = name_split[1]
+def _get_year(exch, ins, day_date):
+    resplit = re.findall(r'([0-9]*)([A-Z,a-z]*)', ins)
+    begin = 200
+    split_date = ''
+    for i in range(10):
+        split_date = str(begin + i) + resplit[1][0][-3:] + '31'
+        if split_date >= day_date:
+            break
 
-        if 'CZCE' == exch:
-            if int(_year_[0:1]) > 4:
-                yearstr = '201%s' % _year_[0:1]
-            else:
-                yearstr = '202%s' % _year_[0:1]
-        else:
-            yearstr = '20%s' % _year_[0:2]
-
-    return yearstr
+    return split_date[0:4]
 
 
 def get_rawtick(exch, ins, day_date, time_slice=[]):
@@ -121,7 +116,7 @@ def get_rawtick(exch, ins, day_date, time_slice=[]):
                 temp = cPickle.loads(c.rawtick(exch, ins, day_date))
                 c.close()
             else:
-                if _get_year(exch, ins) <= '2022':
+                if _get_year(exch, ins, day_date) <= '2022':
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic1_2-4']
                     c.connect(client_api)
@@ -163,7 +158,7 @@ def get_kline(exch, ins, day_date, time_slice=[], period='1T'):
                 temp = cPickle.loads(c.kline(exch, ins, day_date, period))
                 c.close()
             else:
-                if _get_year(exch, ins) <= '2022':
+                if _get_year(exch, ins, day_date) <= '2022':
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic1_2-4']
                     c.connect(client_api)
@@ -205,7 +200,7 @@ def get_level1(exch, ins, day_date, time_slice=[]):
                 temp = cPickle.loads(c.level1(exch, ins, day_date))
                 c.close()
             else:
-                if _get_year(exch, ins) <= '2022':
+                if _get_year(exch, ins, day_date) <= '2022':
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic1_2-4']
                     c.connect(client_api)
@@ -247,7 +242,7 @@ def get_mline(exch, ins, day_date):
                 temp = cPickle.loads(c.mline(exch, ins, day_date))
                 c.close()
             else:
-                if _get_year(exch, ins) <= '2022':
+                if _get_year(exch, ins, day_date) <= '2022':
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic1_2-4']
                     c.connect(client_api)
@@ -275,27 +270,26 @@ def get_date(exch, ins):
             temp = c.date(exch, ins)
             c.close()
         else:
-            if _get_year(exch, ins) <= '2022':
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic1_2-4']
-                c.connect(client_api)
-                temp = c.date(exch, ins)
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic2_2']
-                c.connect(client_api)
-                temp_a = c.date(exch, ins)
-                c.close()
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_citic1_2-4']
+            c.connect(client_api)
+            temp_a = c.date(exch, ins)
+            c.close()
 
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_tsaodai1_2']
-                c.connect(client_api)
-                temp_b = c.date(exch, ins)
-                c.close()
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_citic2_2']
+            c.connect(client_api)
+            temp_b = c.date(exch, ins)
+            c.close()
 
-                temp = list(set(temp_a + temp_b))
-                temp.sort()
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_tsaodai1_2']
+            c.connect(client_api)
+            temp_c = c.date(exch, ins)
+            c.close()
+
+            temp = list(set(temp_a + temp_b + temp_c))
+            temp.sort()
     except:
         pass
 
