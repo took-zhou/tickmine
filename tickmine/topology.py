@@ -108,6 +108,24 @@ class Topology:
         }
         self.gradation_list.append(gradation.copy())
         gradation = {
+            'docker_name': 'tickserver_gate1_1',
+            'access_api': 'tcp://192.168.0.104:8110',
+            'contain_year': ['2024'],
+            'contain_exch': ['GATE'],
+            'contain_type': ['crypto'],
+            'mode': 'debug'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
+            'docker_name': 'tickserver_gate1_2',
+            'access_api': 'tcp://192.168.0.104:8111',
+            'contain_year': ['2024'],
+            'contain_exch': ['GATE'],
+            'contain_type': ['crypto'],
+            'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
             'docker_name': 'tickserver_summary1_1',
             'access_api': 'tcp://192.168.0.102:8150',
             'contain_year': ['all'],

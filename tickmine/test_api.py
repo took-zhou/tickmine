@@ -7,7 +7,7 @@ from tickmine.api import *
 
 def test_exch():
     ret_exch = get_exch()
-    assert (len(ret_exch) == 8)
+    assert (len(ret_exch) == 9)
 
 
 def test_ins():
@@ -17,13 +17,16 @@ def test_ins():
     ret_ins = get_ins('SHSE')
     assert (len(ret_ins) > 100)
 
+    ret_ins = get_ins('GATE')
+    assert (len(ret_ins) > 20)
+
 
 def test_date():
     ret_date = get_date('CZCE', 'TA205')
     assert (len(ret_date) > 100)
 
-    # ret_date = get_date('global', 'CL')
-    # assert (len(ret_date) > 10)
+    ret_date = get_date('GATE', 'BTC_USDT')
+    assert (len(ret_date) > 10)
 
 
 def test_rawtick():
@@ -62,6 +65,12 @@ def test_rawtick():
 
     # ret_rawtick = get_rawtick('CZCE', 'TA209', '20220718', time_slice=['21:00:00', '01:00:00'])
     # assert (len(ret_rawtick) > 10)
+
+    ret_rawtick = get_rawtick('GATE', 'ETH_USDT', '20230104')
+    assert (len(ret_rawtick) > 10)
+
+    ret_rawtick = get_rawtick('GATE', 'AVAX_USDT', '20240730')
+    assert (len(ret_rawtick) > 10)
 
 
 if __name__ == "__main__":
