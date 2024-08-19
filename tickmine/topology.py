@@ -9,8 +9,8 @@ class Topology:
     summary1_* 815* 8150 是debug口 8159是nginx口
     baostock1_* 816* 8160 是debug口 8169是nginx口
     192.168.0.104
-    gate_self1_* 812* 8120 是debug口 8219是nginx口
-    gate1_* 811* 8110 是debug口 8119是nginx口
+    gate_self1_* 817* 8170 是debug口 8279是nginx口
+    gate1_* 818* 8180 是debug口 8189是nginx口
     '''
 
     def __init__(self):
@@ -91,7 +91,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_gate_self1_1',
-            'access_api': 'tcp://192.168.0.104:8120',
+            'access_api': 'tcp://192.168.0.104:8170',
             'contain_year': ['2024'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],
@@ -100,7 +100,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_gate_self1_2',
-            'access_api': 'tcp://192.168.0.104:8121',
+            'access_api': 'tcp://192.168.0.104:8171',
             'contain_year': ['2024'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],
@@ -109,7 +109,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_gate1_1',
-            'access_api': 'tcp://192.168.0.104:8110',
+            'access_api': 'tcp://192.168.0.104:8180',
             'contain_year': ['2024'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],
@@ -118,7 +118,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_gate1_2',
-            'access_api': 'tcp://192.168.0.104:8111',
+            'access_api': 'tcp://192.168.0.104:8181',
             'contain_year': ['2024'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],

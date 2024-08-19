@@ -18,6 +18,7 @@ except:
     print('select external api')
     for item in topology.gradation_list:
         topology.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.102', 'tsaodai.com')
+        topology.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.104', 'tsaodai.com')
 
 
 def _get_night_date(_data):
