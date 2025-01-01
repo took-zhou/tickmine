@@ -2,15 +2,18 @@ class Topology:
     '''
     port分配规则:
     192.168.0.102
-    tsaodai1_* 812* 8120 是debug口 8219是nginx口
     citic1_* 811* 8110 是debug口 8119是nginx口
-    citic2_* 814* 8140 是debug口 8149是nginx口
+
+    192.168.0.104
+    citic_self1_* 812* 8120 是debug口 8219是nginx口
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
+    citic2_* 814* 8140 是debug口 8149是nginx口
     summary1_* 815* 8150 是debug口 8159是nginx口
     baostock1_* 816* 8160 是debug口 8169是nginx口
-    192.168.0.104
-    gate_self1_* 817* 8170 是debug口 8279是nginx口
+    gate_self1_* 817* 8170 是debug口 8179是nginx口
     gate1_* 818* 8180 是debug口 8189是nginx口
+    fxcm_self1_* 819* 8190 是debug口 8199是nginx口
+    fxcm1_* 820* 8200 是debug口 8209是nginx口
     '''
 
     def __init__(self):
@@ -18,8 +21,8 @@ class Topology:
         self.ip_dict = {}
 
         gradation = {
-            'docker_name': 'tickserver_tsaodai1_1',
-            'access_api': 'tcp://192.168.0.102:8120',
+            'docker_name': 'tickserver_citic_self1_1',
+            'access_api': 'tcp://192.168.0.104:8120',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -27,8 +30,8 @@ class Topology:
         }
         self.gradation_list.append(gradation.copy())
         gradation = {
-            'docker_name': 'tickserver_tsaodai1_2',
-            'access_api': 'tcp://192.168.0.102:8121',
+            'docker_name': 'tickserver_citic_self1_2',
+            'access_api': 'tcp://192.168.0.104:8121',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -55,7 +58,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_citic2_1',
-            'access_api': 'tcp://192.168.0.102:8140',
+            'access_api': 'tcp://192.168.0.104:8140',
             'contain_year': ['2023', '2024', '2025', '2026', '2027', '2028'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -64,7 +67,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_citic2_2',
-            'access_api': 'tcp://192.168.0.102:8141',
+            'access_api': 'tcp://192.168.0.104:8141',
             'contain_year': ['2023', '2024', '2025', '2026', '2027', '2028'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -73,7 +76,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_zhongtai1_1',
-            'access_api': 'tcp://192.168.0.102:8130',
+            'access_api': 'tcp://192.168.0.104:8130',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['SHSE', 'SZSE'],
             'contain_type': ['security'],
@@ -82,7 +85,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_zhongtai1_2',
-            'access_api': 'tcp://192.168.0.102:8131',
+            'access_api': 'tcp://192.168.0.104:8131',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['SHSE', 'SZSE'],
             'contain_type': ['security'],
@@ -126,8 +129,44 @@ class Topology:
         }
         self.gradation_list.append(gradation.copy())
         gradation = {
+            'docker_name': 'tickserver_fxcm_self1_1',
+            'access_api': 'tcp://192.168.0.104:8190',
+            'contain_year': ['2024', '2025'],
+            'contain_exch': ['FXCM'],
+            'contain_type': ['forex'],
+            'mode': 'debug'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
+            'docker_name': 'tickserver_fxcm_self1_2',
+            'access_api': 'tcp://192.168.0.104:8191',
+            'contain_year': ['2024', '2025'],
+            'contain_exch': ['FXCM'],
+            'contain_type': ['forex'],
+            'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
+            'docker_name': 'tickserver_fxcm1_1',
+            'access_api': 'tcp://192.168.0.104:8200',
+            'contain_year': ['2024', '2025'],
+            'contain_exch': ['FXCM'],
+            'contain_type': ['forex'],
+            'mode': 'debug'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
+            'docker_name': 'tickserver_fxcm1_2',
+            'access_api': 'tcp://192.168.0.104:8201',
+            'contain_year': ['2024', '2025'],
+            'contain_exch': ['FXCM'],
+            'contain_type': ['forex'],
+            'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+        gradation = {
             'docker_name': 'tickserver_summary1_1',
-            'access_api': 'tcp://192.168.0.102:8150',
+            'access_api': 'tcp://192.168.0.104:8150',
             'contain_year': ['all'],
             'contain_exch': ['all'],
             'contain_type': ['all'],
@@ -136,7 +175,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_summary1_2',
-            'access_api': 'tcp://192.168.0.102:8151',
+            'access_api': 'tcp://192.168.0.104:8151',
             'contain_year': ['all'],
             'contain_exch': ['all'],
             'contain_type': ['all'],
