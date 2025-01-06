@@ -395,17 +395,8 @@ def get_date(exch, ins):
             c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_fxcm1_2']
             c.connect(client_api)
-            temp_a = c.date(exch, ins)
+            temp = c.date(exch, ins)
             c.close()
-
-            c = zerorpc.Client(timeout=300, heartbeat=None)
-            client_api = topology.ip_dict['tickserver_fxcm1_2']
-            c.connect(client_api)
-            temp_b = c.date(exch, ins)
-            c.close()
-
-            temp = list(set(temp_a + temp_b))
-            temp.sort()
         else:
             c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_citic1_2-4']
@@ -458,18 +449,10 @@ def get_ins(exch, special_type='', special_date=''):
             temp = list(set(temp))
         elif exch in ['FXCM']:
             c = zerorpc.Client(timeout=300, heartbeat=None)
-            client_api = topology.ip_dict['tickserver_fxcm_self1_2']
-            c.connect(client_api)
-            temp_a = c.ins(exch, special_type, special_date)
-            c.close()
-
-            c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_fxcm1_2']
             c.connect(client_api)
-            temp_b = c.ins(exch, special_type, special_date)
+            temp = c.ins(exch, special_type, special_date)
             c.close()
-            temp = temp_a + temp_b
-            temp = list(set(temp))
         else:
             c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_citic1_2-4']
@@ -499,11 +482,11 @@ def get_ins(exch, special_type='', special_date=''):
 def get_exch():
     temp = []
     try:
-        # c = zerorpc.Client(timeout=300, heartbeat=None)
-        # client_api = topology.ip_dict['tickserver_zhongtai1_2']
-        # c.connect(client_api)
-        # security_exch = c.exch()
-        # c.close()
+        c = zerorpc.Client(timeout=300, heartbeat=None)
+        client_api = topology.ip_dict['tickserver_zhongtai1_2']
+        c.connect(client_api)
+        security_exch = c.exch()
+        c.close()
 
         c = zerorpc.Client(timeout=300, heartbeat=None)
         client_api = topology.ip_dict['tickserver_gate_self1_2']
@@ -523,8 +506,7 @@ def get_exch():
         future_exch = c.exch()
         c.close()
 
-        # temp = security_exch + crypto_exch + forex_exch + future_exch
-        temp = crypto_exch + forex_exch + future_exch
+        temp = security_exch + crypto_exch + forex_exch + future_exch
         temp.sort()
     except:
         pass
@@ -568,5 +550,5 @@ if __name__ == "__main__":
     # runTime = end - start
     # print("run time: ", runTime)
     # time.sleep(10000)
-    print(get_exch())
+    print(get_ins('FXCM'))
     # print(get_kline('CZCE', 'AP501', '20241031', period='1D'))

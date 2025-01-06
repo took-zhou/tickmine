@@ -5,7 +5,7 @@ class Topology:
     citic1_* 811* 8110 是debug口 8119是nginx口
 
     192.168.0.104
-    citic_self1_* 812* 8120 是debug口 8219是nginx口
+    citic_self1_* 812* 8120 是debug口 8129是nginx口
     zhongtai1_* 813* 8130 是debug口 8139是nginx口
     citic2_* 814* 8140 是debug口 8149是nginx口
     summary1_* 815* 8150 是debug口 8159是nginx口
@@ -13,7 +13,7 @@ class Topology:
     gate_self1_* 817* 8170 是debug口 8179是nginx口
     gate1_* 818* 8180 是debug口 8189是nginx口
     fxcm_self1_* 819* 8190 是debug口 8199是nginx口
-    fxcm1_* 820* 8200 是debug口 8209是nginx口
+    fxcm1_* 830* 8300 是debug口 8309是nginx口
     '''
 
     def __init__(self):
@@ -148,7 +148,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_fxcm1_1',
-            'access_api': 'tcp://192.168.0.104:8200',
+            'access_api': 'tcp://192.168.0.104:8300',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['FXCM'],
             'contain_type': ['forex'],
@@ -157,7 +157,7 @@ class Topology:
         self.gradation_list.append(gradation.copy())
         gradation = {
             'docker_name': 'tickserver_fxcm1_2',
-            'access_api': 'tcp://192.168.0.104:8201',
+            'access_api': 'tcp://192.168.0.104:8301',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['FXCM'],
             'contain_type': ['forex'],
