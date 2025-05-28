@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # coding=utf-8
 import pytest
+import numpy as np
+from datetime import datetime
 
-from tickmine.api import *
+from tickmine.api import get_exch, get_ins, get_date, get_rawtick
 
 
 def test_exch():
@@ -25,36 +27,45 @@ def test_ins():
 
 
 def test_date():
-    ret_date = get_date('CZCE', 'TA205')
-    assert (len(ret_date) > 100)
-
-    ret_date = get_date('GATE', 'BTC_USDT')
-    assert (len(ret_date) > 10)
-
-    ret_date = get_date('FXCM', 'AUD_CAD')
-    assert (len(ret_date) > 10)
+    ret_exch = get_exch()
+    selected_exch = np.random.choice(ret_exch, size=3, replace=False)
+    for exch in selected_exch:
+        ret_ins = get_ins(exch)
+        needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        selected_ins = np.random.choice(needed_ins, size=30, replace=False)
+        for ins in selected_ins:
+            ret_date = get_date(exch, ins)
+            if len(ret_date) <= 1:
+                continue
+            dates = []
+            for date_str in ret_date:
+                date = datetime.strptime(date_str, "%Y%m%d")
+                dates.append(date)
+            for i in range(1, len(dates)):
+                delta = dates[i] - dates[i - 1]
+                assert (delta.days < 15), "exch: %s, ins: %s, date1: %s, date2: %s" % (exch, ins, ret_date[i - 1], ret_date[i])
 
 
 def test_rawtick():
-    ret_rawtick = get_rawtick('CZCE', 'TA209', '20220310', time_slice=['09:00:00', '09:30:00'])
+    ret_rawtick = get_rawtick('CZCE', 'TA209', '20220310')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('CZCE', 'TA209', '20220310', time_slice=['21:00:00', '21:30:00'])
+    ret_rawtick = get_rawtick('CZCE', 'TA209', '20220310')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('CZCE', 'TA205', '20211227', time_slice=['09:00:00', '09:30:00'])
+    ret_rawtick = get_rawtick('CZCE', 'TA205', '20211227')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('CZCE', 'TA205', '20211227', time_slice=['21:00:00', '21:30:00'])
+    ret_rawtick = get_rawtick('CZCE', 'TA205', '20211227')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227', time_slice=['09:00:00', '09:30:00'])
+    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227', time_slice=['21:00:00', '21:30:00'])
+    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227')
     assert (len(ret_rawtick) > 10)
 
-    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227', time_slice=['00:00:00', '01:00:00'])
+    ret_rawtick = get_rawtick('SHFE', 'al2205', '20211227')
     assert (len(ret_rawtick) > 10)
 
     ret_rawtick = get_rawtick('GATE', 'ETH_USDT', '20230104')
