@@ -32,7 +32,9 @@ def test_date():
     for exch in selected_exch:
         ret_ins = get_ins(exch)
         needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
-        selected_ins = np.random.choice(needed_ins, size=30, replace=False)
+        if len(needed_ins) <= 2:
+            continue
+        selected_ins = np.random.choice(needed_ins, size=100, replace=False)
         for ins in selected_ins:
             ret_date = get_date(exch, ins)
             if len(ret_date) <= 1:
