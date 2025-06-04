@@ -3,7 +3,6 @@ import datetime
 import re
 
 import _pickle as cPickle
-import pandas as pd
 import zerorpc
 
 from tickmine.topology import topology
@@ -35,187 +34,141 @@ def _get_year(exch, ins, day_date):
     return split_date[0:4]
 
 
-def get_rawtick(exch, ins, day_date):
+def _get_data(func, exch, ins, day_date, period):
     temp = []
     try:
         if exch in ['SHSE', 'SZSE']:
             c = zerorpc.Client(timeout=300, heartbeat=None)
             client_api = topology.ip_dict['tickserver_zhongtai1']
             c.connect(client_api)
-            temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+            for data in c.__getattr__(func)(exch, ins, day_date, period):
+                yield cPickle.loads(data)
             c.close()
         elif exch in ['GATE']:
             if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
                 c = zerorpc.Client(timeout=300, heartbeat=None)
                 client_api = topology.ip_dict['tickserver_gate_self1']
                 c.connect(client_api)
-                temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                for data in c.__getattr__(func)(exch, ins, day_date, period):
+                    yield cPickle.loads(data)
                 c.close()
             else:
                 c = zerorpc.Client(timeout=300, heartbeat=None)
                 client_api = topology.ip_dict['tickserver_gate1']
                 c.connect(client_api)
-                temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                for data in c.__getattr__(func)(exch, ins, day_date, period):
+                    yield cPickle.loads(data)
                 c.close()
         elif exch in ['FXCM']:
             if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
                 c = zerorpc.Client(timeout=300, heartbeat=None)
                 client_api = topology.ip_dict['tickserver_fxcm1']
                 c.connect(client_api)
-                temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                for data in c.__getattr__(func)(exch, ins, day_date, period):
+                    yield cPickle.loads(data)
                 c.close()
             else:
                 c = zerorpc.Client(timeout=300, heartbeat=None)
                 client_api = topology.ip_dict['tickserver_fxcm1']
                 c.connect(client_api)
-                temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                for data in c.__getattr__(func)(exch, ins, day_date, period):
+                    yield cPickle.loads(data)
                 c.close()
         else:
             if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
                 c = zerorpc.Client(timeout=300, heartbeat=None)
                 client_api = topology.ip_dict['tickserver_citic_self1']
                 c.connect(client_api)
-                temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                for data in c.__getattr__(func)(exch, ins, day_date, period):
+                    yield cPickle.loads(data)
                 c.close()
             else:
                 if _get_year(exch, ins, day_date) <= '2022':
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic1']
                     c.connect(client_api)
-                    temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                    for data in c.__getattr__(func)(exch, ins, day_date, period):
+                        yield cPickle.loads(data)
                     c.close()
                 else:
                     c = zerorpc.Client(timeout=300, heartbeat=None)
                     client_api = topology.ip_dict['tickserver_citic2']
                     c.connect(client_api)
-                    temp = cPickle.loads(c.rawtick(exch, ins, day_date))
+                    for data in c.__getattr__(func)(exch, ins, day_date, period):
+                        yield cPickle.loads(data)
                     c.close()
     except:
         pass
 
     return temp
+
+
+def _stream_data(func, exch, ins, period):
+    temp = []
+    try:
+        if exch in ['SHSE', 'SZSE']:
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_zhongtai1']
+            c.connect(client_api)
+            for data in c.__getattr__(func)(exch, ins, '', period):
+                yield cPickle.loads(data)
+            c.close()
+        elif exch in ['GATE']:
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_gate1']
+            c.connect(client_api)
+            for data in c.__getattr__(func)(exch, ins, '', period):
+                yield cPickle.loads(data)
+            c.close()
+        elif exch in ['FXCM']:
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_fxcm1']
+            c.connect(client_api)
+            for data in c.__getattr__(func)(exch, ins, '', period):
+                yield cPickle.loads(data)
+            c.close()
+        else:
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_citic1']
+            c.connect(client_api)
+            for data in c.__getattr__(func)(exch, ins, '', period):
+                yield cPickle.loads(data)
+            c.close()
+
+            c = zerorpc.Client(timeout=300, heartbeat=None)
+            client_api = topology.ip_dict['tickserver_citic2']
+            c.connect(client_api)
+            for data in c.__getattr__(func)(exch, ins, '', period):
+                yield cPickle.loads(data)
+            c.close()
+    except:
+        pass
+
+    return temp
+
+
+def get_rawtick(exch, ins, day_date):
+    return list(_get_data('rawtick', exch, ins, day_date, ''))[0]
+
+
+def stream_rawtick(exch, ins):
+    yield from _stream_data('rawtick', exch, ins, '')
 
 
 def get_kline(exch, ins, day_date, period='1T'):
-    temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=None)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-            c.close()
-        elif exch in ['GATE']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_gate_self1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_gate1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                c.close()
-        elif exch in ['FXCM']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                c.close()
-        else:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic_self1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                c.close()
-            else:
-                if _get_year(exch, ins, day_date) <= '2022':
-                    c = zerorpc.Client(timeout=300, heartbeat=None)
-                    client_api = topology.ip_dict['tickserver_citic1']
-                    c.connect(client_api)
-                    temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                    c.close()
-                else:
-                    c = zerorpc.Client(timeout=300, heartbeat=None)
-                    client_api = topology.ip_dict['tickserver_citic2']
-                    c.connect(client_api)
-                    temp = cPickle.loads(c.kline(exch, ins, day_date, period))
-                    c.close()
-    except:
-        pass
+    return list(_get_data('kline', exch, ins, day_date, period))[0]
 
-    return temp
+
+def stream_kline(exch, ins, period='1T'):
+    yield from _stream_data('kline', exch, ins, period)
 
 
 def get_mline(exch, ins, day_date):
-    temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=None)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            temp = cPickle.loads(c.mline(exch, ins, day_date))
-            c.close()
-        elif exch in ['GATE']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_gate_self1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.mline(exch, ins, day_date))
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_gate1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.mline(exch, ins, day_date))
-                c.close()
-        elif exch in ['FXCM']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.mline(exch, ins, day_date))
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.mline(exch, ins, day_date))
-                c.close()
-        else:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=None)
-                client_api = topology.ip_dict['tickserver_citic_self1']
-                c.connect(client_api)
-                temp = cPickle.loads(c.mline(exch, ins, day_date))
-                c.close()
-            else:
-                if _get_year(exch, ins, day_date) <= '2022':
-                    c = zerorpc.Client(timeout=300, heartbeat=None)
-                    client_api = topology.ip_dict['tickserver_citic1']
-                    c.connect(client_api)
-                    temp = cPickle.loads(c.mline(exch, ins, day_date))
-                    c.close()
-                else:
-                    c = zerorpc.Client(timeout=300, heartbeat=None)
-                    client_api = topology.ip_dict['tickserver_citic2']
-                    c.connect(client_api)
-                    temp = cPickle.loads(c.mline(exch, ins, day_date))
-                    c.close()
-    except:
-        pass
+    return list(_get_data('mline', exch, ins, day_date, ''))[0]
 
-    return temp
+
+def stream_mline(exch, ins):
+    yield from _stream_data('mline', exch, ins, '')
 
 
 def get_date(exch, ins):
@@ -296,6 +249,7 @@ def get_ins(exch, special_type='', special_date=''):
             c.connect(client_api)
             temp_b = c.ins(exch, special_type, special_date)
             c.close()
+
             temp = temp_a + temp_b
             temp = list(set(temp))
         elif exch in ['FXCM']:
@@ -322,6 +276,7 @@ def get_ins(exch, special_type='', special_date=''):
             c.connect(client_api)
             temp_c = c.ins(exch, special_type, special_date)
             c.close()
+
             temp = temp_a + temp_b + temp_c
             temp = list(set(temp))
     except:
@@ -365,41 +320,6 @@ def get_exch():
     return temp
 
 
-def get_activity(exch, ins, day_date):
-    temp = []
-    try:
-        c = zerorpc.Client(timeout=300, heartbeat=None)
-        client_api = topology.ip_dict['tickserver_summary1']
-        c.connect(client_api)
-        temp = cPickle.loads(c.activity(exch, ins, day_date))
-        c.close()
-
-    except:
-        pass
-
-    return temp
-
-
 if __name__ == "__main__":
-    # import time
-
-    # start = time.time()
-    # ret = get_activity('CFFEX', 'IC', '20150416')
-    # ret_ins = ret[ret['Ins'] == 'IC1505']
-    # print(ret[ret['Ins'] == 'IC1505'].InsDegree[0])
-    # print(ret_ins.InsDegree[0])
-    # print(ret_ins.GroupDegree[0])
-
-    # # for item in ret:
-    # #     out = get_rawtick('CZCE', 'AP301', item)
-    # #     # print(out)
-    # #     if len(out) == 0:
-    # #         print(item)
-    # print(ret)
-
-    # end = time.time()
-    # runTime = end - start
-    # print("run time: ", runTime)
-    # time.sleep(10000)
-    print(get_date('GATE', 'RWA_USDT'))
-    # print(get_kline('CZCE', 'AP501', '20241031', period='1D'))
+    for item in stream_rawtick('CZCE', 'AP510'):
+        print(item)
