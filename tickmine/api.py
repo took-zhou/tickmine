@@ -148,7 +148,7 @@ def _stream_data(func, exch, ins, period):
 
 
 def get_rawtick(exch, ins, day_date):
-    return next(_get_data('rawtick', exch, ins, day_date, ''))
+    return list(_get_data('rawtick', exch, ins, day_date, ''))[0]
 
 
 def stream_rawtick(exch, ins):
@@ -156,7 +156,7 @@ def stream_rawtick(exch, ins):
 
 
 def get_kline(exch, ins, day_date, period='1T'):
-    return next(_get_data('kline', exch, ins, day_date, period))
+    return list(_get_data('kline', exch, ins, day_date, period))[0]
 
 
 def stream_kline(exch, ins, period='1T'):
@@ -164,7 +164,7 @@ def stream_kline(exch, ins, period='1T'):
 
 
 def get_mline(exch, ins, day_date):
-    return next(_get_data('mline', exch, ins, day_date, ''))
+    return list(_get_data('mline', exch, ins, day_date, ''))[0]
 
 
 def stream_mline(exch, ins):
