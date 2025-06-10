@@ -13,6 +13,8 @@ channel_options = [
     ("grpc.keepalive_timeout_ms", 5000),
     ("grpc.http2.max_pings_without_data", 5),
     ("grpc.keepalive_permit_without_calls", 1),
+    ('grpc.max_receive_message_length', 100 * 1024 * 1024),
+    ('grpc.max_send_message_length', 100 * 1024 * 1024),
 ]
 
 try:

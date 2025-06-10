@@ -19,7 +19,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_citic1',
-            'access_api': 'tcp://192.168.0.104:8911',
+            'access_api': '192.168.0.104:8911',
             'contain_year': ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -29,7 +29,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_citic_self1',
-            'access_api': 'tcp://192.168.0.104:8912',
+            'access_api': '192.168.0.104:8912',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -39,7 +39,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_zhongtai1',
-            'access_api': 'tcp://192.168.0.104:8913',
+            'access_api': '192.168.0.104:8913',
             'contain_year': ['2022', '2023', '2024', '2025', '2026', '2027'],
             'contain_exch': ['SHSE', 'SZSE'],
             'contain_type': ['security'],
@@ -49,7 +49,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_citic2',
-            'access_api': 'tcp://192.168.0.104:8914',
+            'access_api': '192.168.0.104:8914',
             'contain_year': ['2023', '2024', '2025', '2026', '2027', '2028'],
             'contain_exch': ['CFFEX', 'CZCE', 'DCE', 'INE', 'SHFE'],
             'contain_type': ['future', 'option'],
@@ -59,7 +59,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_summary1',
-            'access_api': 'tcp://192.168.0.104:8915',
+            'access_api': '192.168.0.104:8915',
             'contain_year': ['all'],
             'contain_exch': ['all'],
             'contain_type': ['all'],
@@ -69,7 +69,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_baostock1',
-            'access_api': 'tcp://192.168.0.104:8916',
+            'access_api': '192.168.0.104:8916',
             'contain_year': ['all'],
             'contain_exch': ['all'],
             'contain_type': ['all'],
@@ -79,7 +79,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_gate_self1',
-            'access_api': 'tcp://192.168.0.104:8917',
+            'access_api': '192.168.0.104:8917',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],
@@ -89,7 +89,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_gate1',
-            'access_api': 'tcp://192.168.0.104:8918',
+            'access_api': '192.168.0.104:8918',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['GATE'],
             'contain_type': ['crypto'],
@@ -99,7 +99,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_fxcm_self1',
-            'access_api': 'tcp://192.168.0.104:8919',
+            'access_api': '192.168.0.104:8919',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['FXCM'],
             'contain_type': ['forex'],
@@ -109,7 +109,7 @@ class Topology:
 
         gradation = {
             'docker_name': 'tickserver_fxcm1',
-            'access_api': 'tcp://192.168.0.104:8920',
+            'access_api': '192.168.0.104:8920',
             'contain_year': ['2024', '2025'],
             'contain_exch': ['FXCM'],
             'contain_type': ['forex'],
