@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package tick;
+
+service Tick {
+  rpc Rawtick(RequestPara1) returns (stream BytesFlow) {}
+  rpc Kline(RequestPara1) returns (stream BytesFlow) {}
+  rpc Mline(RequestPara1) returns (stream BytesFlow) {}
+  rpc Exch(Empty) returns (stream StringFlow) {}
+  rpc Ins(RequestPara2) returns (stream StringFlow) {}
+  rpc Date(RequestPara3) returns (stream StringFlow) {}
+}
+
+message Empty {}
+
+message RequestPara1 {
+  string exch = 1;
+  string ins = 2;
+  string date = 3;
+  optional string period = 4;
+}
+
+message RequestPara2 {
+  string exch = 1;
+  optional string type = 2;
+  optional string date = 3;
+}
+
+message RequestPara3 {
+  string exch = 1;
+  string ins = 2;
+}
+
+message BytesFlow {
+  bytes info = 1;
+}
+
+message StringFlow {
+  string info = 1;
+}

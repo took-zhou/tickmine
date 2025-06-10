@@ -1,18 +1,24 @@
 #coding=utf-8
 import datetime
 import re
-
+import grpc
 import _pickle as cPickle
-import zerorpc
 
 from tickmine.topology import topology
+from tickmine import tick_pb2
+from tickmine import tick_pb2_grpc
+
+channel_options = [
+    ("grpc.keepalive_time_ms", 8000),
+    ("grpc.keepalive_timeout_ms", 5000),
+    ("grpc.http2.max_pings_without_data", 5),
+    ("grpc.keepalive_permit_without_calls", 1),
+]
 
 try:
-    c = zerorpc.Client(timeout=3, heartbeat=45)
-    client_api = topology.ip_dict['tickserver_citic_self1']
-    c.connect(client_api)
-    future_exch = c.exch()
-    c.close()
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        temp = [response.info for response in stub.Exch(tick_pb2.Empty())]
 except:
     print('select external api')
     for item in topology.gradation_list:
@@ -22,304 +28,220 @@ except:
             topology.ip_dict[item['docker_name']] = item['access_api'].replace('192.168.0.104', 'tsaodai.com')
 
 
-def _get_year(exch, ins, day_date):
+def _get_year(exch, ins, date):
     resplit = re.findall(r'([0-9]*)([A-Z,a-z]*)', ins)
     begin = 200
     split_date = ''
     for i in range(10):
         split_date = str(begin + i) + resplit[1][0][-3:] + '31'
-        if split_date >= day_date:
+        if split_date >= date:
             break
 
     return split_date[0:4]
 
 
-def _get_data(func, exch, ins, day_date, period):
-    temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, day_date, period):
-                yield cPickle.loads(data)
-            c.close()
-        elif exch in ['GATE']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=45)
-                client_api = topology.ip_dict['tickserver_gate_self1']
-                c.connect(client_api)
-                for data in c.__getattr__(func)(exch, ins, day_date, period):
-                    yield cPickle.loads(data)
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=45)
-                client_api = topology.ip_dict['tickserver_gate1']
-                c.connect(client_api)
-                for data in c.__getattr__(func)(exch, ins, day_date, period):
-                    yield cPickle.loads(data)
-                c.close()
-        elif exch in ['FXCM']:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=45)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                for data in c.__getattr__(func)(exch, ins, day_date, period):
-                    yield cPickle.loads(data)
-                c.close()
-            else:
-                c = zerorpc.Client(timeout=300, heartbeat=45)
-                client_api = topology.ip_dict['tickserver_fxcm1']
-                c.connect(client_api)
-                for data in c.__getattr__(func)(exch, ins, day_date, period):
-                    yield cPickle.loads(data)
-                c.close()
+def _get_data(func, exch, ins, date, period):
+    request = tick_pb2.RequestPara1(exch=exch, ins=ins, date=date, period=period)
+    if exch in ['SHSE', 'SZSE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_zhongtai1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+    elif exch in ['GATE']:
+        if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate_self1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
         else:
-            if (datetime.datetime.today() - datetime.datetime.strptime(day_date, "%Y%m%d")).days <= 45:
-                c = zerorpc.Client(timeout=300, heartbeat=45)
-                client_api = topology.ip_dict['tickserver_citic_self1']
-                c.connect(client_api)
-                for data in c.__getattr__(func)(exch, ins, day_date, period):
-                    yield cPickle.loads(data)
-                c.close()
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+    elif exch in ['FXCM']:
+        if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+        else:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+    else:
+        if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+        else:
+            if _get_year(exch, ins, date) <= '2022':
+                with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
+                    stub = tick_pb2_grpc.TickStub(channel)
+                    return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
             else:
-                if _get_year(exch, ins, day_date) <= '2022':
-                    c = zerorpc.Client(timeout=300, heartbeat=45)
-                    client_api = topology.ip_dict['tickserver_citic1']
-                    c.connect(client_api)
-                    for data in c.__getattr__(func)(exch, ins, day_date, period):
-                        yield cPickle.loads(data)
-                    c.close()
-                else:
-                    c = zerorpc.Client(timeout=300, heartbeat=45)
-                    client_api = topology.ip_dict['tickserver_citic2']
-                    c.connect(client_api)
-                    for data in c.__getattr__(func)(exch, ins, day_date, period):
-                        yield cPickle.loads(data)
-                    c.close()
-    except:
-        pass
-
-    return temp
+                with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic2'], options=channel_options) as channel:
+                    stub = tick_pb2_grpc.TickStub(channel)
+                    return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
 
 
 def _stream_data(func, exch, ins, period):
-    temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, '', period):
-                yield cPickle.loads(data)
-            c.close()
-        elif exch in ['GATE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_gate1']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, '', period):
-                yield cPickle.loads(data)
-            c.close()
-        elif exch in ['FXCM']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_fxcm1']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, '', period):
-                yield cPickle.loads(data)
-            c.close()
-        else:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic1']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, '', period):
-                yield cPickle.loads(data)
-            c.close()
+    if exch in ['SHSE', 'SZSE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_zhongtai1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
+    elif exch in ['GATE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
+    elif exch in ['FXCM']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
+    else:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic2']
-            c.connect(client_api)
-            for data in c.__getattr__(func)(exch, ins, '', period):
-                yield cPickle.loads(data)
-            c.close()
-    except:
-        pass
-
-    return temp
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic2'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
 
 
-def get_rawtick(exch, ins, day_date):
-    return list(_get_data('rawtick', exch, ins, day_date, ''))[0]
+def get_rawtick(exch, ins, date):
+    return _get_data('Rawtick', exch, ins, date, '')
 
 
 def stream_rawtick(exch, ins):
-    yield from _stream_data('rawtick', exch, ins, '')
+    yield from _stream_data('Rawtick', exch, ins, '')
 
 
-def get_kline(exch, ins, day_date, period='1T'):
-    return list(_get_data('kline', exch, ins, day_date, period))[0]
+def get_kline(exch, ins, date, period='1T'):
+    return _get_data('Kline', exch, ins, date, period)
 
 
 def stream_kline(exch, ins, period='1T'):
-    yield from _stream_data('kline', exch, ins, period)
+    yield from _stream_data('Kline', exch, ins, period)
 
 
-def get_mline(exch, ins, day_date):
-    return list(_get_data('mline', exch, ins, day_date, ''))[0]
+def get_mline(exch, ins, date):
+    return _get_data('Mline', exch, ins, date, '')
 
 
 def stream_mline(exch, ins):
-    yield from _stream_data('mline', exch, ins, '')
+    yield from _stream_data('Mline', exch, ins, '')
 
 
 def get_date(exch, ins):
     temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            temp = c.date(exch, ins)
-            c.close()
-        elif exch in ['GATE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_gate_self1']
-            c.connect(client_api)
-            temp_a = c.date(exch, ins)
-            c.close()
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_gate1']
-            c.connect(client_api)
-            temp_b = c.date(exch, ins)
-            c.close()
+    if exch in ['SHSE', 'SZSE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_zhongtai1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
+    elif exch in ['GATE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate_self1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_a = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
 
-            temp = list(set(temp_a + temp_b))
-            temp.sort()
-        elif exch in ['FXCM']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_fxcm1']
-            c.connect(client_api)
-            temp = c.date(exch, ins)
-            c.close()
-        else:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic1']
-            c.connect(client_api)
-            temp_a = c.date(exch, ins)
-            c.close()
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_b = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic2']
-            c.connect(client_api)
-            temp_b = c.date(exch, ins)
-            c.close()
+        temp = list(set(temp_a + temp_b))
+        temp.sort()
+    elif exch in ['FXCM']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
+    else:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_a = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic_self1']
-            c.connect(client_api)
-            temp_c = c.date(exch, ins)
-            c.close()
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic2'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_b = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
 
-            temp = list(set(temp_a + temp_b + temp_c))
-            temp.sort()
-    except:
-        pass
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_c = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
+
+        temp = list(set(temp_a + temp_b + temp_c))
+        temp.sort()
 
     return temp
 
 
 def get_ins(exch, special_type='', special_date=''):
     temp = []
-    try:
-        if exch in ['SHSE', 'SZSE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_zhongtai1']
-            c.connect(client_api)
-            temp = c.ins(exch, special_type, special_date)
-            c.close()
-        elif exch in ['GATE']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_gate_self1']
-            c.connect(client_api)
-            temp_a = c.ins(exch, special_type, special_date)
-            c.close()
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_gate1']
-            c.connect(client_api)
-            temp_b = c.ins(exch, special_type, special_date)
-            c.close()
+    if exch in ['SHSE', 'SZSE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_zhongtai1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
+    elif exch in ['GATE']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate_self1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_a = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
 
-            temp = temp_a + temp_b
-            temp = list(set(temp))
-        elif exch in ['FXCM']:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_fxcm1']
-            c.connect(client_api)
-            temp = c.ins(exch, special_type, special_date)
-            c.close()
-        else:
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic1']
-            c.connect(client_api)
-            temp_a = c.ins(exch, special_type, special_date)
-            c.close()
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_b = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic2']
-            c.connect(client_api)
-            temp_b = c.ins(exch, special_type, special_date)
-            c.close()
+        temp = temp_a + temp_b
+        temp = list(set(temp))
+    elif exch in ['FXCM']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
+    else:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_a = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
 
-            c = zerorpc.Client(timeout=300, heartbeat=45)
-            client_api = topology.ip_dict['tickserver_citic_self1']
-            c.connect(client_api)
-            temp_c = c.ins(exch, special_type, special_date)
-            c.close()
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic2'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_b = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
 
-            temp = temp_a + temp_b + temp_c
-            temp = list(set(temp))
-    except:
-        pass
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp_c = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
+
+        temp = temp_a + temp_b + temp_c
+        temp = list(set(temp))
 
     return temp
 
 
 def get_exch():
     temp = []
-    try:
-        c = zerorpc.Client(timeout=300, heartbeat=45)
-        client_api = topology.ip_dict['tickserver_zhongtai1']
-        c.connect(client_api)
-        security_exch = c.exch()
-        c.close()
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_zhongtai1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        security_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
 
-        c = zerorpc.Client(timeout=300, heartbeat=45)
-        client_api = topology.ip_dict['tickserver_gate_self1']
-        c.connect(client_api)
-        crypto_exch = c.exch()
-        c.close()
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_gate_self1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        crypto_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
 
-        c = zerorpc.Client(timeout=300, heartbeat=45)
-        client_api = topology.ip_dict['tickserver_fxcm1']
-        c.connect(client_api)
-        forex_exch = c.exch()
-        c.close()
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        forex_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
 
-        c = zerorpc.Client(timeout=300, heartbeat=45)
-        client_api = topology.ip_dict['tickserver_citic_self1']
-        c.connect(client_api)
-        future_exch = c.exch()
-        c.close()
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        future_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
 
-        temp = security_exch + crypto_exch + forex_exch + future_exch
-        temp.sort()
-    except:
-        pass
+    temp = security_exch + crypto_exch + forex_exch + future_exch
+    temp.sort()
 
     return temp
 
 
 if __name__ == "__main__":
-    for item in stream_rawtick('CZCE', 'AP510'):
+    print(get_exch())
+    print(get_ins("CZCE"))
+    print(get_date("CZCE", 'AP210'))
+    print(get_rawtick("CZCE", 'AP210', '20220722'))
+    for item in stream_kline("CZCE", "AP210"):
         print(item)
