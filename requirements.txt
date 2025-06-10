@@ -2,4 +2,3 @@ pandas==1.4.3
 pytest==7.1.2
 setuptools==39.0.1
 grpcio==1.60.0
-grpcio-tools==1.60.0
