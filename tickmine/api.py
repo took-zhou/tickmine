@@ -2,6 +2,7 @@
 import datetime
 import re
 import grpc
+import threading
 import _pickle as cPickle
 
 from tickmine.topology import topology
@@ -108,6 +109,18 @@ def _stream_data(func, exch, ins, period):
             stub = tick_pb2_grpc.TickStub(channel)
             for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
                 yield cPickle.loads(response.info)
+
+
+# 有可能是python3.8线程退出异常，打的补丁
+def patch_threading_shutdown():
+    _origin_shutdown = threading._shutdown
+
+    def _patched_shutdown():
+        non_daemon_threads = [t for t in threading.enumerate() if t != threading.current_thread() and not t.daemon]
+        if len(non_daemon_threads) > 1:
+            _origin_shutdown()
+
+    threading._shutdown = _patched_shutdown
 
 
 def get_rawtick(exch, ins, date):
@@ -239,6 +252,8 @@ def get_exch():
 
     return temp
 
+
+patch_threading_shutdown()
 
 if __name__ == "__main__":
     print(get_exch())

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 import pytest
+import sys
 import numpy as np
 from datetime import datetime
 
@@ -84,4 +85,9 @@ def test_rawtick():
 
 
 if __name__ == "__main__":
-    pytest.main()
+    # python test_api.py -k "test_date"
+    pytest_args = sys.argv[1:]
+    if not pytest_args:
+        pytest_args = ["-v"]
+
+    pytest.main(pytest_args)
