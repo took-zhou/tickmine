@@ -11,6 +11,8 @@ class Topology:
     gate1_* 918* 9180 是debug口 8918是nginx口
     fxcm_self1_* 919* 9190 是debug口 8919是nginx口
     fxcm1_* 920* 9200 是debug口 8920是nginx口
+    ibkr_self1_* 921* 9210 是debug口 8921是nginx口
+    ibkr1_* 922* 9220 是debug口 8922是nginx口
     '''
 
     def __init__(self):
@@ -113,6 +115,26 @@ class Topology:
             'contain_year': ['2024', '2025'],
             'contain_exch': ['FXCM'],
             'contain_type': ['forex'],
+            'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+
+        gradation = {
+            'docker_name': 'tickserver_ibkr_self1',
+            'access_api': '192.168.0.104:8921',
+            'contain_year': ['all'],
+            'contain_exch': ['NASDAQ'],
+            'contain_type': ['all'],
+            'mode': 'release'
+        }
+        self.gradation_list.append(gradation.copy())
+
+        gradation = {
+            'docker_name': 'tickserver_ibkr1',
+            'access_api': '192.168.0.104:8922',
+            'contain_year': ['all'],
+            'contain_exch': ['NASDAQ'],
+            'contain_type': ['all'],
             'mode': 'release'
         }
         self.gradation_list.append(gradation.copy())

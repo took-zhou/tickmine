@@ -67,6 +67,15 @@ def _get_data(func, exch, ins, date, period):
             with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
                 stub = tick_pb2_grpc.TickStub(channel)
                 return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+    elif exch in ['NASDAQ']:
+        if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr_self1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+        else:
+            with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
+                stub = tick_pb2_grpc.TickStub(channel)
+                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
     else:
         if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
             with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
@@ -96,6 +105,11 @@ def _stream_data(func, exch, ins, period):
                 yield cPickle.loads(response.info)
     elif exch in ['FXCM']:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
+                yield cPickle.loads(response.info)
+    elif exch in ['NASDAQ']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
                 yield cPickle.loads(response.info)
@@ -169,6 +183,10 @@ def get_date(exch, ins):
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
+    elif exch in ['NASDAQ']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
     else:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
@@ -210,6 +228,10 @@ def get_ins(exch, special_type='', special_date=''):
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
+    elif exch in ['NASDAQ']:
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
     else:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
@@ -247,7 +269,11 @@ def get_exch():
         stub = tick_pb2_grpc.TickStub(channel)
         future_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
 
-    temp = security_exch + crypto_exch + forex_exch + future_exch
+    with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
+        stub = tick_pb2_grpc.TickStub(channel)
+        ibkr_exch = [response.info for response in stub.Exch(tick_pb2.Empty())]
+
+    temp = security_exch + crypto_exch + forex_exch + future_exch + ibkr_exch
     temp.sort()
 
     return temp
