@@ -67,7 +67,7 @@ def _get_data(func, exch, ins, date, period):
             with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
                 stub = tick_pb2_grpc.TickStub(channel)
                 return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
-    elif exch in ['NASDAQ']:
+    elif exch in ['NASDAQ', 'SEHK']:
         if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
             with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr_self1'], options=channel_options) as channel:
                 stub = tick_pb2_grpc.TickStub(channel)
@@ -108,7 +108,7 @@ def _stream_data(func, exch, ins, period):
             stub = tick_pb2_grpc.TickStub(channel)
             for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
                 yield cPickle.loads(response.info)
-    elif exch in ['NASDAQ']:
+    elif exch in ['NASDAQ', 'SEHK']:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             for response in stub.__getattribute__(func)(tick_pb2.RequestPara1(exch=exch, ins=ins, date="", period=period)):
@@ -183,7 +183,7 @@ def get_date(exch, ins):
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
-    elif exch in ['NASDAQ']:
+    elif exch in ['NASDAQ', 'SEHK']:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Date(tick_pb2.RequestPara3(exch=exch, ins=ins))]
@@ -228,7 +228,7 @@ def get_ins(exch, special_type='', special_date=''):
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_fxcm1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
-    elif exch in ['NASDAQ']:
+    elif exch in ['NASDAQ', 'SEHK']:
         with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
             stub = tick_pb2_grpc.TickStub(channel)
             temp = [response.info for response in stub.Ins(tick_pb2.RequestPara2(exch=exch, type=special_type, date=special_date))]
