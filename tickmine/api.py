@@ -68,14 +68,9 @@ def _get_data(func, exch, ins, date, period):
                 stub = tick_pb2_grpc.TickStub(channel)
                 return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
     elif exch in ['NASDAQ', 'SEHK']:
-        if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
-            with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr_self1'], options=channel_options) as channel:
-                stub = tick_pb2_grpc.TickStub(channel)
-                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
-        else:
-            with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
-                stub = tick_pb2_grpc.TickStub(channel)
-                return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
+        with grpc.insecure_channel(target=topology.ip_dict['tickserver_ibkr1'], options=channel_options) as channel:
+            stub = tick_pb2_grpc.TickStub(channel)
+            return [cPickle.loads(response.info) for response in stub.__getattribute__(func)(request)][0]
     else:
         if (datetime.datetime.today() - datetime.datetime.strptime(date, "%Y%m%d")).days <= 45:
             with grpc.insecure_channel(target=topology.ip_dict['tickserver_citic_self1'], options=channel_options) as channel:
