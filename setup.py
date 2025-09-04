@@ -2,10 +2,11 @@ from setuptools import find_packages, setup
 
 setup(
     name="tickmine",
-    version="4.8.4",
+    version="4.8.5",
     author="zhoufan",
     author_email="zhoufan@tsaodai.com",
     description="data layer",
+    package_data={"": ["*.csv"]},
 
     # 项目主页
     url="https://devpi.tsaodai.com",
