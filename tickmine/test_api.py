@@ -61,26 +61,19 @@ def test_date():
 
 def test_adjust():
     stock_exch = ['NASDAQ', 'SEHK']
-    possible_splits = [1.5, 2.0, 3.0, 6.0, 10.0, 15.0, 0.5, 0.333, 0.1]
     for exch in stock_exch:
         ret_ins = get_ins(exch)
         needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
         if len(needed_ins) <= 10:
             continue
-        selected_ins = np.random.choice(needed_ins, size=10, replace=False)
+        selected_ins = np.random.choice(needed_ins, size=len(needed_ins), replace=False)
+        date_list = get_date('NASDAQ', 'AAPL')[-2:]
         for ins in selected_ins:
-            prev_d1_kline = ''
-            for d1_kline in stream_kline(exch, ins, period='1D'):
-                if len(prev_d1_kline) > 0:
-                    price_change = prev_d1_kline.Close[0] / d1_kline.Open[0]
-                    split_flag = False
-                    for item in possible_splits:
-                        if abs(price_change - item) < 0.052:  # 291 在20150918拆股产生了2.05148价格倍数波动
-                            split_flag = True
-                            break
-                    if split_flag == False:
-                        assert (0.2 < price_change < 1.8), "ins: %s, date: %s, price change: %f" % (ins, d1_kline.index[0], price_change)
-                prev_d1_kline = d1_kline
+            prev_d1_kline = get_kline(exch, ins, date_list[0], period='1D')
+            d1_kline = get_kline(exch, ins, date_list[1], period='1D')
+            if len(prev_d1_kline) > 0 and len(d1_kline) > 0:
+                price_change = prev_d1_kline.Close[0] / d1_kline.Open[0]
+                assert (0.55 < price_change < 1.8), "ins: %s, date: %s, price change: %f" % (ins, d1_kline.index[0], price_change)
 
 
 def test_rawtick():
