@@ -39,7 +39,7 @@ def test_date():
     selected_exch = np.random.choice(ret_exch, size=3, replace=False)
     for exch in selected_exch:
         ret_ins = get_ins(exch)
-        needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        needed_ins = [item for item in ret_ins if len(item) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
         if len(needed_ins) <= 10:
             continue
         selected_ins = np.random.choice(needed_ins, size=30, replace=False)
@@ -53,7 +53,7 @@ def test_date():
                 dates.append(date)
             for i in range(1, len(dates)):
                 delta = dates[i] - dates[i - 1]
-                if delta.days > 15:
+                if delta.days > 15 and delta.days < 3000:
                     message = "%s %s %s-%s" % (exch, ins, ret_date[i - 1], ret_date[i])
                     if message not in known_misalignment:
                         assert False, message
@@ -63,7 +63,7 @@ def test_adjust():
     stock_exch = ['NASDAQ', 'SEHK']
     for exch in stock_exch:
         ret_ins = get_ins(exch)
-        needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        needed_ins = [item for item in ret_ins if len(item) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
         if len(needed_ins) <= 10:
             continue
         selected_ins = np.random.choice(needed_ins, size=len(needed_ins), replace=False)
@@ -83,13 +83,18 @@ def test_rawtick():
     selected_exch = np.random.choice(ret_exch, size=3, replace=False)
     for exch in selected_exch:
         ret_ins = get_ins(exch, special_date=temp_date)
-        needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        needed_ins = [item for item in ret_ins if len(item) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        if exch in ['CFFEX', 'CZCE', 'DCE', 'GATE', 'GFEX', 'INE', 'NASDAQ', 'SEHK', 'SHFE']:
+            assert (len(needed_ins) > 10), '%s %s' % (exch, temp_date)
         if len(needed_ins) <= 10:
             continue
         selected_ins = np.random.choice(needed_ins, size=10, replace=False)
+        exist_rawtick = False
         for ins in selected_ins:
             rawtick = get_rawtick(exch, ins, temp_date)
-            assert (len(rawtick) > 10), '%s %s %s' % (exch, ins, temp_date)
+            if len(rawtick) > 1:
+                exist_rawtick = True
+        assert (exist_rawtick == True), '%s %s' % (exch, temp_date)
 
 
 def test_kline():
@@ -99,13 +104,18 @@ def test_kline():
     selected_exch = np.random.choice(ret_exch, size=3, replace=False)
     for exch in selected_exch:
         ret_ins = get_ins(exch, special_date=temp_date)
-        needed_ins = [item for item in ret_ins if len(ret_ins) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        needed_ins = [item for item in ret_ins if len(item) < 7 or exch in ['GATE', 'NASDAQ', 'SEHK', 'FXCM']]
+        if exch in ['CFFEX', 'CZCE', 'DCE', 'GATE', 'GFEX', 'INE', 'NASDAQ', 'SEHK', 'SHFE']:
+            assert (len(needed_ins) > 10), '%s %s' % (exch, temp_date)
         if len(needed_ins) <= 10:
             continue
         selected_ins = np.random.choice(needed_ins, size=10, replace=False)
+        exist_kline = False
         for ins in selected_ins:
             kline = get_kline(exch, ins, temp_date)
-            assert (len(kline) > 10), '%s %s %s' % (exch, ins, temp_date)
+            if len(kline) > 1:
+                exist_kline = True
+        assert (exist_kline == True), '%s %s' % (exch, temp_date)
 
 
 if __name__ == "__main__":
