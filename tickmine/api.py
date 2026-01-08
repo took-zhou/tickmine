@@ -120,18 +120,6 @@ def _stream_data(func, exch, ins, period):
                 yield cPickle.loads(response.info)
 
 
-# 有可能是python3.8线程退出异常，打的补丁
-def patch_threading_shutdown():
-    _origin_shutdown = threading._shutdown
-
-    def _patched_shutdown():
-        non_daemon_threads = [t for t in threading.enumerate() if t != threading.current_thread() and not t.daemon]
-        if len(non_daemon_threads) > 1:
-            _origin_shutdown()
-
-    threading._shutdown = _patched_shutdown
-
-
 def get_rawtick(exch, ins, date):
     return _get_data('Rawtick', exch, ins, date, '')
 
@@ -273,8 +261,6 @@ def get_exch():
 
     return temp
 
-
-patch_threading_shutdown()
 
 if __name__ == "__main__":
     print(get_exch())
